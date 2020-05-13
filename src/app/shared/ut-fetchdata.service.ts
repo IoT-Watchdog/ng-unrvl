@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
+import { HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { GlobalSettingsService } from '../core/global-settings.service';
 import { HelperFunctionsService } from '../core/helper-functions.service';
 
-import { HttpHeaders } from '@angular/common/http';
+
 import { cloneDeep } from 'lodash-es';
 
 @Injectable({
