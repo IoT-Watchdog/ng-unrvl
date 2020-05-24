@@ -46,4 +46,13 @@ ng build failed...
 npm update
 npm install sass-loader@latest
 
+(baut immer no net, sass-loader neuer fehler)
+
 ng update @angular/material@8
+  -> updated auch cdk.
+
+(baut immer no net, sass-loader:
+  ValidationError: Invalid options object. Sass Loader has been initialized using an options object that does not match the API schema.
+  https://github.com/material-components/material-components-web/issues/5056 - breaking change in sass-loader 7->8 introduced this
+    try to upgrade to latest ng to solve...
+
