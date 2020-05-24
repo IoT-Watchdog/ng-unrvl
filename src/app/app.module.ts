@@ -18,53 +18,53 @@ registerLocaleData(localeDe, 'de');
 const appRoutes: Routes = [
   {
     path: 'Settings',
-    loadChildren: './ut-settings/ut-settings.module#UtSettingsModule'
+    loadChildren: () => import('./ut-settings/ut-settings.module').then(m => m.UtSettingsModule)
   },
   {
     path: 'Settings/Services',
-    loadChildren: './ut-settings/services/services.module#ServicesModule'
+    loadChildren: () => import('./ut-settings/services/services.module').then(m => m.ServicesModule)
   },
   {
     path: 'Dashboard',
-    loadChildren: './ut-dashboard/ut-dashboard.module#UtDashboardModule'
+    loadChildren: () => import('./ut-dashboard/ut-dashboard.module').then(m => m.UtDashboardModule)
   },
   {
     path: 'Apps/loudness',
-    loadChildren: './ut-apps/loudness/loudness.module#LoudnessModule'
+    loadChildren: () => import('./ut-apps/loudness/loudness.module').then(m => m.LoudnessModule)
   },
   {
     path: 'Apps/ntopng',
-    loadChildren: './ut-apps/ntopng/ntopng.module#NtopngModule'
+    loadChildren: () => import('./ut-apps/ntopng/ntopng.module').then(m => m.NtopngModule)
   },
   {
     path: 'Apps/noir',
-    loadChildren: './ut-apps/noir/noir.module#NoirModule'
+    loadChildren: () => import('./ut-apps/noir/noir.module').then(m => m.NoirModule)
   },
   {
     path: 'Apps/Power',
-    loadChildren: './ut-apps/power/power.module#PowerModule'
+    loadChildren: () => import('./ut-apps/power/power.module').then(m => m.PowerModule)
   },
   {
     path: 'Apps/Temperatures',
     loadChildren:
-      './ut-apps/temperatures/temperatures.module#TemperaturesModule'
+      () => import('./ut-apps/temperatures/temperatures.module').then(m => m.TemperaturesModule)
   },
   {
     path: 'Apps/Dygraph-Playground',
-    loadChildren: './ut-apps/dygraph-dev/dygraph-dev.module#DygraphDevModule'
+    loadChildren: () => import('./ut-apps/dygraph-dev/dygraph-dev.module').then(m => m.DygraphDevModule)
   },
   {
     path: 'Apps/Influx-Test',
-    loadChildren: './ut-apps/influx-test/influx-test.module#InfluxTestModule'
+    loadChildren: () => import('./ut-apps/influx-test/influx-test.module').then(m => m.InfluxTestModule)
   },
   {
     path: 'Apps/MQTT-Test',
-    loadChildren: './ut-apps/mqtt/mqtt.module#MqttModule'
+    loadChildren: () => import('./ut-apps/mqtt/mqtt.module').then(m => m.MqttModule)
   },
 
   {
     path: 'Apps/System',
-    loadChildren: './ut-apps/system/system.module#SystemModule'
+    loadChildren: () => import('./ut-apps/system/system.module').then(m => m.SystemModule)
   },
   {
     path: '',
@@ -73,7 +73,7 @@ const appRoutes: Routes = [
   },
   {
     path: '**',
-    loadChildren: './ut-dashboard/ut-dashboard.module#UtDashboardModule'
+    loadChildren: () => import('./ut-dashboard/ut-dashboard.module').then(m => m.UtDashboardModule)
   }
 ];
 
