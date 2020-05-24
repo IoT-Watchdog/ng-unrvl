@@ -56,4 +56,6 @@ ng update @angular/material@8
   https://github.com/material-components/material-components-web/issues/5056 - breaking change in sass-loader 7->8 introduced this
     try to upgrade to latest ng to solve...
 
+ng2-charts 2.0.3 dependet auf ng7 ...
 npm install ng2-charts@latest
+
