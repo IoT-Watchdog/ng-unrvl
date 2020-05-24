@@ -13,3 +13,37 @@ npm i @angular-devkit/build-angular@0.7.2
 
 ng update @angular/common@7
 
+https://update.angular.io/#7.2:8.2
+
+ng update @angular/cli@8 @angular/core@8
+Package "codelyzer" has an incompatible peer dependency to "@angular/common" (requires ">=2.3.1 <7.0.0 || >6.0.0-beta <7.0.0" (extended), would install "8.2.14").
+                  Package "codelyzer" has an incompatible peer dependency to "@angular/compiler" (requires ">=2.3.1 <7.0.0 || >6.0.0-beta <7.0.0" (extended), would install "8.2.14").
+                  Package "codelyzer" has an incompatible peer dependency to "@angular/platform-browser-dynamic" (requires ">=2.3.1 <7.0.0 || >6.0.0-beta <7.0.0" (extended), would install "8.2.14").
+                  Package "codelyzer" has an incompatible peer dependency to "@angular/platform-browser" (requires ">=2.3.1 <7.0.0 || >6.0.0-beta <7.0.0" (extended), would install "8.2.14").
+                  Package "codelyzer" has an incompatible peer dependency to "@angular/core" (requires ">=2.3.1 <7.0.0 || >6.0.0-beta <7.0.0" (extended), would install "8.2.14").
+
+npm ls
+   WARN npm npm does not support Node.js v10.19.0
+
+ati npm=6.14.3+ds-1~bpo10+1
+  NOK npm ERR! pathArray is not defined -> npm in debian broken, use official version
+  agr npm
+
+as root:
+according to https://linuxize.com/post/how-to-install-node-js-on-debian-10/
+  curl -sL https://deb.nodesource.com/setup_12.x | sudo bash -
+  ati nodejs
+  npm install -g npm
+
+back as user in repo:
+  npm install codelyzer@latest
+
+ng update @angular/cli@8 @angular/core@8
+
+ng build failed...
+  ERROR in Module build failed (from ./node_modules/sass-loader/lib/loader.js):
+
+npm update
+npm install sass-loader@latest
+
+ng update @angular/material@8
