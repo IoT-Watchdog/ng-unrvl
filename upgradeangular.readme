@@ -60,4 +60,5 @@ ng2-charts 2.0.3 dependet auf ng7 ...
 npm install ng2-charts@latest
 
 ng update @angular/core @angular/cli
+ng update @angular/material
 
