@@ -809,4 +809,52 @@ export class HelperFunctionsService {
       parseInt(hex_str.substr(6, 2), 16).toString(10)
     );
   }
+  intBtoStrB(intb: number) {
+    let prefixes = [' K', ' M', ' G', ' T'];
+    let newNr = intb;
+    let currentprefix = '';
+
+    while (newNr > 1024) {
+      newNr = Math.round(newNr / 1024 * 10) / 10;
+      currentprefix = prefixes.shift();
+    }
+    return newNr.toString(10) + currentprefix;
+  }
+  numProtoToText(proto: number): string {
+    if (proto == 1) return 'icmp';
+    if (proto == 2) return 'igmp';
+    if (proto == 6) return 'TCP';
+    if (proto == 17) return 'UDP';
+    return proto.toString(10);
+  }
+  numL7ProtoToText(proto: number): string {
+    if (proto == 0) return 'unknown';
+    if (proto == 4) return 'IMAP';
+    if (proto == 5) return 'DNS';
+    if (proto == 7) return 'HTTP';
+    if (proto == 8) return 'MDNS';
+    if (proto == 9) return 'NTP';
+    if (proto == 10) return 'NetBIOS';
+    if (proto == 12) return 'SSDP';
+    if (proto == 18) return 'DHCP';
+    if (proto == 39) return 'TLS'; // TLS.signal / DNS.playstore
+    if (proto == 51) return 'IMAPS';
+    if (proto == 81) return 'ICMP';
+    if (proto == 82) return  'IGMP';
+    if (proto == 91 ) return 'TLS';
+    if (proto == 102) return 'ICMPv6';
+    if (proto == 103) return 'DHCPV6';
+    if (proto == 125) return 'TLS.skype';
+    if (proto == 126) return 'TLS.Google'; // G+, TLS.Google
+    if (proto == 142) return 'TLS.whatsapp';
+    if (proto == 153) return 'UPnP';
+    if (proto == 154) return 'LLMNR';
+    if (proto == 178) return 'TLS.amazon';
+    if (proto == 188) return 'Quick UDP'; // QUIC
+    if (proto == 212) return 'TLS.microsoft';
+    if (proto == 220) return 'TLS.cloudflare';
+    if (proto == 228) return 'TLS.playstore'; //  / DNS.playstore
+    if (proto == 239) return 'G-DNS';
+    return proto.toString(10);
+  }
 }

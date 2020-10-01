@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 // import * as mysql from 'mysql';
-import { GlobalSettingsService } from 'app/core/global-settings.service';
-import { UtFetchdataService } from 'app/shared/ut-fetchdata.service';
-import { HelperFunctionsService } from 'app/core/helper-functions.service';
+import { GlobalSettingsService } from '../../core/global-settings.service';
+import { UtFetchdataService } from '../../shared/ut-fetchdata.service';
+import { HelperFunctionsService } from '../../core/helper-functions.service';
 
 @Component({
   selector: 'app-hosts',
@@ -56,6 +56,15 @@ export class HostsComponent implements OnInit {
       const row = dataArr[i];
       row['IP_DST_ADDR_str'] = this.h.intToIPv4(row['IP_DST_ADDR']);
       row['IP_SRC_ADDR_str'] = this.h.intToIPv4(row['IP_SRC_ADDR']);
+      const begin = parseInt(row['FIRST_SWITCHED']);
+      const end = parseInt(row['LAST_SWITCHED']);
+      row['fromdate'] = new Date(begin * 1000);
+      row['enddate'] = new Date(end * 1000);
+      row['duration'] = end - begin;
+      row['inb_s'] = this.h.intBtoStrB(parseInt(row['IN_BYTES']));
+      row['outb_s'] = this.h.intBtoStrB(parseInt(row['OUT_BYTES']));
+      row['prototext'] = this.h.numProtoToText(parseInt(row['PROTOCOL']));
+      row['L7prototext'] = this.h.numL7ProtoToText(parseInt(row['L7_PROTO']));
     }
 
     this.sqlresult = data['result'];

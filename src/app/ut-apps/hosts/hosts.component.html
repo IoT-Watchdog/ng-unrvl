@@ -1,21 +1,33 @@
-<p>hosts works!</p>
+<h2>Hosts overview</h2>
 
-<table class="flows" *ngIf="sqlresult.length">
+<table class="flows" *ngIf="sqlresult && sqlresult.length">
   <tr>
     <th>idx</th>
     <th>IP_SRC_ADDR</th>
     <th>IP_DST_ADDR</th>
     <th>L4_DST_PORT</th>
     <th>L7_PROTO</th>
-    <th>Payload</th>
+    <th>PROTO</th>
+    <th>Begin</th>
+    <th>End</th>
+    <th>Duration (s)</th>
+    <th>In</th>
+    <th>Out</th>
   </tr>
   <tr *ngFor="let flow of sqlresult">
     <td>{{ flow.idx }}</td>
     <td>{{ flow.IP_SRC_ADDR_str }}</td>
     <td>{{ flow.IP_DST_ADDR_str }}</td>
     <td>{{ flow.L4_DST_PORT }}</td>
-    <td>{{ flow.L7_PROTO }}</td>
+    <td>{{ flow.L7prototext }}</td>
+    <td>{{ flow.prototext }}</td>
+    <td>{{ flow.fromdate | date: 'dd.MM.yy HH:mm:ss' }}</td>
+    <td>{{ flow.enddate | date: 'dd.MM.yy HH:mm:ss' }}</td>
+    <td>{{ flow.duration }}</td>
+    <td>{{ flow.inb_s }}B</td>
+    <td>{{ flow.outb_s }}B</td>
   </tr>
 </table>
 
-{{ sqlresult }}
+<!-- {{ sqlresult[0] }} -->
+
