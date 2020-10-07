@@ -59,7 +59,9 @@ export class HostsComponent implements OnInit {
       const row = dataArr[i];
       row['IP_SRC_ADDR_str'] = this.h.intToIPv4(row['IP_SRC_ADDR']);
       row['IP_DST_ADDR_str'] = this.h.intToIPv4(row['IP_DST_ADDR']);
-      this.getNameforIP(row['IP_DST_ADDR_str']);
+      if (!this.ipNames.hasOwnProperty(row['IP_DST_ADDR_str'])) {
+        this.getNameforIP(row['IP_DST_ADDR_str']);
+      }
       const begin = parseInt(row['FIRST_SWITCHED']);
       const end = parseInt(row['LAST_SWITCHED']);
       row['fromdate'] = new Date(begin * 1000);
@@ -84,13 +86,12 @@ export class HostsComponent implements OnInit {
       return;
     }
 
-
     for (const key in data) {
       if (data.hasOwnProperty(key)) {
         if (data[key].search('NXDOMAIN') > -1) {
           this.ipNames[key] = 'unknown';
         } else {
-          this.ipNames[key] = data[key].slice(0,-1); // remove last "."
+          this.ipNames[key] = data[key].slice(0, -1); // remove last "."
         }
         console.log(key, ':', this.ipNames[key]);
       }
