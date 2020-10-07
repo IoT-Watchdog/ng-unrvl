@@ -14,6 +14,8 @@ export class HostsComponent implements OnInit {
 
   public sqlresult: Array<any>;
 
+  public ipNames = {};
+
   constructor(
     private globalSettings: GlobalSettingsService,
     private utHTTP: UtFetchdataService,
@@ -47,6 +49,7 @@ export class HostsComponent implements OnInit {
     this.utHTTP
       .getHTTPData(this.API + 'sql/my.php')
       .subscribe((data: Object) => this.handleMyQuery(data));
+    this.getNameforIP('192.27.2.3');
   }
   handleMyQuery(data: Object) {
     console.log('api retval:', data);
@@ -54,8 +57,9 @@ export class HostsComponent implements OnInit {
     const dataArr = data['result'];
     for (let i = 0; i < dataArr.length; i++) {
       const row = dataArr[i];
-      row['IP_DST_ADDR_str'] = this.h.intToIPv4(row['IP_DST_ADDR']);
       row['IP_SRC_ADDR_str'] = this.h.intToIPv4(row['IP_SRC_ADDR']);
+      row['IP_DST_ADDR_str'] = this.h.intToIPv4(row['IP_DST_ADDR']);
+      this.getNameforIP(row['IP_DST_ADDR_str']);
       const begin = parseInt(row['FIRST_SWITCHED']);
       const end = parseInt(row['LAST_SWITCHED']);
       row['fromdate'] = new Date(begin * 1000);
@@ -68,5 +72,29 @@ export class HostsComponent implements OnInit {
     }
 
     this.sqlresult = data['result'];
+  }
+  getNameforIP(IP: string) {
+    this.utHTTP
+      .getHTTPData(this.API + 'system/ip2name.php?ip=' + IP)
+      .subscribe((data: Object) => this.handleIPname(data));
+  }
+  handleIPname(data: Object) {
+    if (data.hasOwnProperty('success') && data['success'] == false) {
+      console.error('handleIPname error, ret:', data);
+      return;
+    }
+
+
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        if (data[key].search('NXDOMAIN') > -1) {
+          this.ipNames[key] = 'unknown';
+        } else {
+          this.ipNames[key] = data[key].slice(0,-1); // remove last "."
+        }
+        console.log(key, ':', this.ipNames[key]);
+      }
+    }
+    console.log(this.ipNames);
   }
 }

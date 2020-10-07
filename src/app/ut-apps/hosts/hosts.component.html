@@ -5,6 +5,7 @@
     <th>idx</th>
     <th>IP_SRC_ADDR</th>
     <th>IP_DST_ADDR</th>
+    <th>remote hostname</th>
     <th>L4_DST_PORT</th>
     <th>L7_PROTO</th>
     <th>PROTO</th>
@@ -18,6 +19,11 @@
     <td>{{ flow.idx }}</td>
     <td>{{ flow.IP_SRC_ADDR_str }}</td>
     <td>{{ flow.IP_DST_ADDR_str }}</td>
+    <td>
+      <span>{{
+        ipNames[flow.IP_DST_ADDR_str] ? ipNames[flow.IP_DST_ADDR_str] : '...'
+      }}</span>
+    </td>
     <td>{{ flow.L4_DST_PORT }}</td>
     <td>{{ flow.L7prototext }}</td>
     <td>{{ flow.prototext }}</td>
@@ -29,5 +35,8 @@
   </tr>
 </table>
 
-<!-- {{ sqlresult[0] }} -->
+<div *ngFor="let entry of ipNames | keyvalue">
+  {{ entry.key }} : {{ entry.value }}
+</div>
 
+<!-- {{ sqlresult[0] }}  *ngIf="ipNames[flow.IP_DST_ADDR_str]"-->
