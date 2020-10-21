@@ -14,7 +14,8 @@ export class HostsComponent implements OnInit {
 
   public sqlresult: Array<any>;
 
-  public ipNames = {};
+  public ipNames = { '192.168.3.1': 'Iot-Watchdog Gateway' };
+  public ipLocations = {};
 
   constructor(
     private globalSettings: GlobalSettingsService,
@@ -49,18 +50,62 @@ export class HostsComponent implements OnInit {
     this.utHTTP
       .getHTTPData(this.API + 'sql/my.php')
       .subscribe((data: Object) => this.handleMyQuery(data));
-    this.getNameforIP('192.27.2.3');
+    // this.getNameforIP('192.27.2.3');
+  }
+  reload() {
+    this.sqlresult = [];
+    this.utHTTP
+      .getHTTPData(this.API + 'sql/my.php')
+      .subscribe((data: Object) => this.handleMyQuery(data));
   }
   handleMyQuery(data: Object) {
     console.log('api retval:', data);
     const newArr = [];
     const dataArr = data['result'];
+    const uniqueDataArr = [];
     for (let i = 0; i < dataArr.length; i++) {
       const row = dataArr[i];
+
+      // check for duplicates
+      let isDuplicate = false;
+      for (let di = 0; di < uniqueDataArr.length; di++) {
+        const urow = uniqueDataArr[di];
+        if (
+          row['IP_SRC_ADDR'] == urow['IP_SRC_ADDR'] &&
+          row['IP_DST_ADDR'] == urow['IP_DST_ADDR'] &&
+          row['L4_DST_PORT'] == urow['L4_DST_PORT'] &&
+          row['PROTOCOL'] == urow['PROTOCOL'] &&
+          row['L7_PROTO'] == urow['L7_PROTO']
+        ) {
+          let inb = parseInt(row['IN_BYTES']);
+          inb += parseInt(urow['IN_BYTES']);
+          urow['inb_s'] = this.h.intBtoStrB(inb);
+          urow['IN_BYTES'] = inb;
+
+          let outb = parseInt(row['OUT_BYTES']);
+          outb += parseInt(urow['OUT_BYTES']);
+          urow['outb_s'] = this.h.intBtoStrB(outb);
+          urow['OUT_BYTES'] = outb;
+
+          console.log('found duplicate rows',row,urow);
+
+          isDuplicate = true;
+          break;
+        }
+      }
+      if (isDuplicate) {
+        continue;
+      }
+
       row['IP_SRC_ADDR_str'] = this.h.intToIPv4(row['IP_SRC_ADDR']);
       row['IP_DST_ADDR_str'] = this.h.intToIPv4(row['IP_DST_ADDR']);
       if (!this.ipNames.hasOwnProperty(row['IP_DST_ADDR_str'])) {
         this.getNameforIP(row['IP_DST_ADDR_str']);
+        this.ipNames[row['IP_DST_ADDR_str']] = '...';
+      }
+      if (!this.ipLocations.hasOwnProperty(row['IP_DST_ADDR_str'])) {
+        this.getLocationForIP(row['IP_DST_ADDR_str']);
+        this.ipLocations[row['IP_DST_ADDR_str']] = { wait: true };
       }
       const begin = parseInt(row['FIRST_SWITCHED']);
       const end = parseInt(row['LAST_SWITCHED']);
@@ -71,9 +116,10 @@ export class HostsComponent implements OnInit {
       row['outb_s'] = this.h.intBtoStrB(parseInt(row['OUT_BYTES']));
       row['prototext'] = this.h.numProtoToText(parseInt(row['PROTOCOL']));
       row['L7prototext'] = this.h.numL7ProtoToText(parseInt(row['L7_PROTO']));
+      uniqueDataArr.push(row);
     }
 
-    this.sqlresult = data['result'];
+    this.sqlresult = uniqueDataArr;
   }
   getNameforIP(IP: string) {
     this.utHTTP
@@ -97,5 +143,19 @@ export class HostsComponent implements OnInit {
       }
     }
     console.log(this.ipNames);
+  }
+
+  getLocationForIP(IP: string) {
+    this.utHTTP
+      .getHTTPData(this.API + 'geoloc/city.php?ip=' + IP)
+      .subscribe((data: Object) => this.handleIPLoc(data));
+  }
+  handleIPLoc(data: Object) {
+    if (data.hasOwnProperty('success') && data['success'] == false) {
+      console.error('handleIPLoc error, ret:', data);
+      return;
+    }
+    const ip = data['IP'];
+    this.ipLocations[ip] = data;
   }
 }
