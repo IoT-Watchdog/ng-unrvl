@@ -4,8 +4,6 @@ import { GlobalSettingsService } from '../../core/global-settings.service';
 import { UtFetchdataService } from '../../shared/ut-fetchdata.service';
 import { HelperFunctionsService } from '../../core/helper-functions.service';
 import { geoJSON, circleMarker } from 'leaflet';
-import { cloneDeep } from 'lodash-es';
-import { log } from 'console';
 
 @Component({
   selector: 'app-hosts',
