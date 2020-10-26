@@ -87,7 +87,7 @@ export class HostsComponent implements OnInit {
           urow['outb_s'] = this.h.intBtoStrB(outb);
           urow['OUT_BYTES'] = outb;
 
-          console.log('found duplicate rows',row,urow);
+          console.log('found duplicate rows', row, urow);
 
           isDuplicate = true;
           break;
@@ -98,15 +98,39 @@ export class HostsComponent implements OnInit {
       }
 
       row['IP_SRC_ADDR_str'] = this.h.intToIPv4(row['IP_SRC_ADDR']);
+      const src_is_local = row['IP_SRC_ADDR_str'].startsWith('192.168.');
+      if (
+        !src_is_local &&
+        !this.ipNames.hasOwnProperty(row['IP_SRC_ADDR_str'])
+      ) {
+        this.getNameforIP(row['IP_SRC_ADDR_str']);
+        this.ipNames[row['IP_SRC_ADDR_str']] = '...';
+      }
       row['IP_DST_ADDR_str'] = this.h.intToIPv4(row['IP_DST_ADDR']);
-      if (!this.ipNames.hasOwnProperty(row['IP_DST_ADDR_str'])) {
+      const dst_is_local = row['IP_DST_ADDR_str'].startsWith('192.168.');
+      if (
+        !dst_is_local &&
+        !this.ipNames.hasOwnProperty(row['IP_DST_ADDR_str'])
+      ) {
         this.getNameforIP(row['IP_DST_ADDR_str']);
         this.ipNames[row['IP_DST_ADDR_str']] = '...';
       }
-      if (!this.ipLocations.hasOwnProperty(row['IP_DST_ADDR_str'])) {
+
+      if (
+        !src_is_local &&
+        !this.ipLocations.hasOwnProperty(row['IP_SRC_ADDR_str'])
+      ) {
+        this.getLocationForIP(row['IP_SRC_ADDR_str']);
+        this.ipLocations[row['IP_SRC_ADDR_str']] = { wait: true };
+      }
+      if (
+        !dst_is_local &&
+        !this.ipLocations.hasOwnProperty(row['IP_DST_ADDR_str'])
+      ) {
         this.getLocationForIP(row['IP_DST_ADDR_str']);
         this.ipLocations[row['IP_DST_ADDR_str']] = { wait: true };
       }
+
       const begin = parseInt(row['FIRST_SWITCHED']);
       const end = parseInt(row['LAST_SWITCHED']);
       row['fromdate'] = new Date(begin * 1000);

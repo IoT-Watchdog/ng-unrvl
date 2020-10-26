@@ -1,7 +1,5 @@
 <h2>Hosts overview</h2>
-<button (click)="reload()">
-  Reload
-</button>
+<button (click)="reload()">Reload</button>
 <table class="flows" *ngIf="sqlresult && sqlresult.length">
   <tr>
     <!-- <th>idx</th> -->
@@ -33,11 +31,27 @@
     <td>
       <span
         >{{
-          ipNames[flow.IP_DST_ADDR_str] ? ipNames[flow.IP_DST_ADDR_str] : '...'
+          ipNames[flow.IP_DST_ADDR_str]
+            ? ipNames[flow.IP_DST_ADDR_str]
+            : ipNames[flow.IP_SRC_ADDR_str]
+            ? ipNames[flow.IP_SRC_ADDR_str]
+            : '...'
         }}
       </span>
     </td>
     <td>
+      <span *ngIf="ipLocations[flow.IP_SRC_ADDR_str]"
+        >{{ ipLocations[flow.IP_SRC_ADDR_str]['isoCode']
+        }}{{
+          ipLocations[flow.IP_SRC_ADDR_str]['city']
+            ? ', ' + ipLocations[flow.IP_SRC_ADDR_str]['city']
+            : ''
+        }}{{
+          ipLocations[flow.IP_SRC_ADDR_str]['state']
+            ? ', ' + ipLocations[flow.IP_SRC_ADDR_str]['state']
+            : ''
+        }}
+      </span>
       <span *ngIf="ipLocations[flow.IP_DST_ADDR_str]"
         >{{ ipLocations[flow.IP_DST_ADDR_str]['isoCode']
         }}{{
