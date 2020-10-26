@@ -87,7 +87,7 @@ export class HostsComponent implements OnInit {
           urow['outb_s'] = this.h.intBtoStrB(outb);
           urow['OUT_BYTES'] = outb;
 
-          console.log('found duplicate rows', row, urow);
+          // console.log('found duplicate rows', row, urow);
 
           isDuplicate = true;
           break;
@@ -108,7 +108,10 @@ export class HostsComponent implements OnInit {
       }
       row['IP_DST_ADDR_str'] = this.h.intToIPv4(row['IP_DST_ADDR']);
       const dst_is_local = row['IP_DST_ADDR_str'].startsWith('192.168.');
-      if (
+      // console.log(row, 'src_is_local',src_is_local, 'dst_is_local', dst_is_local);
+      if (row['IP_DST_ADDR_str'] == '255.255.255.255') {
+        this.ipNames[row['IP_DST_ADDR_str']] = 'Broadcast';
+      } else if (
         !dst_is_local &&
         !this.ipNames.hasOwnProperty(row['IP_DST_ADDR_str'])
       ) {
@@ -181,5 +184,6 @@ export class HostsComponent implements OnInit {
     }
     const ip = data['IP'];
     this.ipLocations[ip] = data;
+    console.log('new location for', ip, data);
   }
 }
