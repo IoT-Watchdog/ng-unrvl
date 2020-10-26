@@ -3,6 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { GlobalSettingsService } from '../../core/global-settings.service';
 import { UtFetchdataService } from '../../shared/ut-fetchdata.service';
 import { HelperFunctionsService } from '../../core/helper-functions.service';
+import { geoJSON, circleMarker } from 'leaflet';
+import { cloneDeep } from 'lodash-es';
+import { log } from 'console';
 
 @Component({
   selector: 'app-hosts',
@@ -17,6 +20,27 @@ export class HostsComponent implements OnInit {
   public ipNames = { '192.168.3.1': 'Iot-Watchdog Gateway' };
   public ipLocations = {};
 
+  public layers = [];
+  private geoJsonFC: GeoJSON.FeatureCollection<any> = {
+    type: 'FeatureCollection',
+    features: [],
+  };
+  private geoJsonLines: GeoJSON.FeatureCollection<any> = {
+    type: 'FeatureCollection',
+    features: [],
+  };
+
+  public geolocationPosition: Object;
+
+  public geojsonMarkerOptions = {
+    radius: 4,
+    // fillColor: '#0000ff80',
+    color: '#0000ff',
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.8,
+  };
+
   constructor(
     private globalSettings: GlobalSettingsService,
     private utHTTP: UtFetchdataService,
@@ -26,24 +50,46 @@ export class HostsComponent implements OnInit {
   }
 
   ngOnInit() {
-    // const connection = mysql.createConnection({
-    //   host: '192.168.11.163',
-    //   user: 'root',
-    //   password: 'jKD7ubqVeg',
-    //   database: 'ntopng',
-    // });
-
-    // connection.connect();
-
-    // connection.query(
-    //   'SELECT * FROM `flowsv4` ORDER BY `LAST_SWITCHED` ASC LIMIT 25',
-    //   function (error, results, fields) {
-    //     if (error) throw error;
-    //     console.log('The solution is: ', results[0].solution);
-    //   }
-    // );
-
-    // connection.end();
+    if (window.navigator.geolocation) {
+      window.navigator.geolocation.getCurrentPosition(
+        (position) => {
+          (this.geolocationPosition = position), console.log(position);
+          const point: GeoJSON.Feature<any> = {
+            type: 'Feature' as const,
+            properties: { Host: 'IoT-Watchdog' },
+            geometry: {
+              type: 'Point',
+              coordinates: [
+                position.coords.longitude,
+                position.coords.latitude,
+              ],
+            },
+          };
+          this.geoJsonFC.features.push(point);
+          const geojsonMarkerOptions = this.geojsonMarkerOptions;
+          const layer = geoJSON(this.geoJsonFC, {
+            pointToLayer: function (feature, latlng) {
+              return circleMarker(latlng, geojsonMarkerOptions);
+            },
+            onEachFeature: this.h.leafletPopup,
+          });
+          this.layers[0] = layer;
+        },
+        (error) => {
+          switch (error.code) {
+            case 1:
+              console.log('Permission Denied');
+              break;
+            case 2:
+              console.log('Position Unavailable');
+              break;
+            case 3:
+              console.log('Timeout');
+              break;
+          }
+        }
+      );
+    }
 
     this.API = this.globalSettings.getAPIEndpoint();
 
@@ -185,5 +231,59 @@ export class HostsComponent implements OnInit {
     const ip = data['IP'];
     this.ipLocations[ip] = data;
     console.log('new location for', ip, data);
+
+    const point: GeoJSON.Feature<any> = {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'Point',
+        coordinates: [data['lon'], data['lat']],
+      },
+    };
+    point.properties['IP'] = ip;
+    if (data.hasOwnProperty('city') && data['city']) {
+      point.properties['City'] = data['city'];
+    }
+    if (data.hasOwnProperty('state') && data['state']) {
+      point.properties['State'] = data['state'];
+    }
+    this.geoJsonFC.features.push(point);
+
+
+    console.log(this.geolocationPosition);
+
+    if (this.geolocationPosition && this.geolocationPosition['coords']) {
+      const linestring: GeoJSON.Feature<any> = {
+        type: 'Feature' as const,
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [
+              this.geolocationPosition['coords']['longitude'],
+              this.geolocationPosition['coords']['latitude'],
+            ],
+            [data['lon'], data['lat']],
+          ],
+        },
+      };
+      this.geoJsonLines.features.push(linestring);
+    }
+
+    console.log(this.layers);
+
+    const geojsonMarkerOptions = this.geojsonMarkerOptions;
+    const layer = geoJSON(this.geoJsonFC, {
+      pointToLayer: function (feature, latlng) {
+        return circleMarker(latlng, geojsonMarkerOptions);
+      },
+      onEachFeature: this.h.leafletPopup,
+    });
+    this.layers[0] = layer;
+
+    const linelayer = geoJSON(this.geoJsonLines, {
+      onEachFeature: this.h.leafletPopup,
+    });
+    this.layers[1] = linelayer;
   }
 }

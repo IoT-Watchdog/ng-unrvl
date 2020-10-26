@@ -1,82 +1,88 @@
 <h2>Hosts overview</h2>
 <button (click)="reload()">Reload</button>
-<table class="flows" *ngIf="sqlresult && sqlresult.length">
-  <tr>
-    <!-- <th>idx</th> -->
-    <th>IP_SRC_ADDR</th>
-    <th>IP_DST_ADDR</th>
-    <th>remote hostname</th>
-    <th>remote location</th>
-    <th>Prt/Port</th>
-    <th>L7_PROTO</th>
-    <!-- <th>Begin</th> -->
-    <th>Last Transfer</th>
-    <th>Duration (s)</th>
-    <th>In</th>
-    <th>Out</th>
-  </tr>
-  <tr *ngFor="let flow of sqlresult">
-    <!-- <td>{{ flow.idx }}</td> -->
-    <td>{{ flow.IP_SRC_ADDR_str }}</td>
-    <td>
-      {{ flow.IP_DST_ADDR_str }}
-      <a
-        href="{{
-          globalSettings.server.baseurl
-        }}:3000/lua/host_details.lua?host={{ flow.IP_DST_ADDR_str }}"
-        target="_blank"
-        ><img class="ntop" src="/assets/ntop_link.png"
-      /></a>
-    </td>
-    <td>
-      <span
-        >{{
-          ipNames[flow.IP_DST_ADDR_str]
-            ? ipNames[flow.IP_DST_ADDR_str]
-            : ipNames[flow.IP_SRC_ADDR_str]
-            ? ipNames[flow.IP_SRC_ADDR_str]
-            : '...'
-        }}
-      </span>
-    </td>
-    <td>
-      <span *ngIf="ipLocations[flow.IP_SRC_ADDR_str]"
-        >{{ ipLocations[flow.IP_SRC_ADDR_str]['isoCode']
-        }}{{
-          ipLocations[flow.IP_SRC_ADDR_str]['city']
-            ? ', ' + ipLocations[flow.IP_SRC_ADDR_str]['city']
-            : ''
-        }}{{
-          ipLocations[flow.IP_SRC_ADDR_str]['state']
-            ? ', ' + ipLocations[flow.IP_SRC_ADDR_str]['state']
-            : ''
-        }}
-      </span>
-      <span *ngIf="ipLocations[flow.IP_DST_ADDR_str]"
-        >{{ ipLocations[flow.IP_DST_ADDR_str]['isoCode']
-        }}{{
-          ipLocations[flow.IP_DST_ADDR_str]['city']
-            ? ', ' + ipLocations[flow.IP_DST_ADDR_str]['city']
-            : ''
-        }}{{
-          ipLocations[flow.IP_DST_ADDR_str]['state']
-            ? ', ' + ipLocations[flow.IP_DST_ADDR_str]['state']
-            : ''
-        }}
-      </span>
-    </td>
-    <td>{{ flow.prototext }} {{ flow.L4_DST_PORT }}</td>
-    <td>{{ flow.L7prototext }}</td>
-    <!-- <td>{{ flow.fromdate | date: 'dd.MM.yy HH:mm:ss' }}</td> -->
-    <td>{{ flow.enddate | date: 'dd.MM.yy HH:mm:ss' }}</td>
-    <td>{{ flow.duration }}</td>
-    <td>{{ flow.inb_s }}B</td>
-    <td>{{ flow.outb_s }}B</td>
-  </tr>
-</table>
+<div class="flowcont">
+  <table class="flows" *ngIf="sqlresult && sqlresult.length">
+    <tr>
+      <!-- <th>idx</th> -->
+      <th>IP_SRC_ADDR</th>
+      <th>IP_DST_ADDR</th>
+      <th>remote hostname</th>
+      <th>remote location</th>
+      <th>Prt/Port</th>
+      <th>L7_PROTO</th>
+      <!-- <th>Begin</th> -->
+      <th>Last Transfer</th>
+      <th>Duration (s)</th>
+      <th>In</th>
+      <th>Out</th>
+    </tr>
+    <tr *ngFor="let flow of sqlresult">
+      <!-- <td>{{ flow.idx }}</td> -->
+      <td>{{ flow.IP_SRC_ADDR_str }}</td>
+      <td>
+        {{ flow.IP_DST_ADDR_str }}
+        <a
+          href="{{
+            globalSettings.server.baseurl
+          }}:3000/lua/host_details.lua?host={{ flow.IP_DST_ADDR_str }}"
+          target="_blank"
+          ><img class="ntop" src="/assets/ntop_link.png"
+        /></a>
+      </td>
+      <td>
+        <span
+          >{{
+            ipNames[flow.IP_DST_ADDR_str]
+              ? ipNames[flow.IP_DST_ADDR_str]
+              : ipNames[flow.IP_SRC_ADDR_str]
+              ? ipNames[flow.IP_SRC_ADDR_str]
+              : '...'
+          }}
+        </span>
+      </td>
+      <td>
+        <span *ngIf="ipLocations[flow.IP_SRC_ADDR_str]"
+          >{{ ipLocations[flow.IP_SRC_ADDR_str]['isoCode']
+          }}{{
+            ipLocations[flow.IP_SRC_ADDR_str]['city']
+              ? ', ' + ipLocations[flow.IP_SRC_ADDR_str]['city']
+              : ''
+          }}{{
+            ipLocations[flow.IP_SRC_ADDR_str]['state']
+              ? ', ' + ipLocations[flow.IP_SRC_ADDR_str]['state']
+              : ''
+          }}
+        </span>
+        <span *ngIf="ipLocations[flow.IP_DST_ADDR_str]"
+          >{{ ipLocations[flow.IP_DST_ADDR_str]['isoCode']
+          }}{{
+            ipLocations[flow.IP_DST_ADDR_str]['city']
+              ? ', ' + ipLocations[flow.IP_DST_ADDR_str]['city']
+              : ''
+          }}{{
+            ipLocations[flow.IP_DST_ADDR_str]['state']
+              ? ', ' + ipLocations[flow.IP_DST_ADDR_str]['state']
+              : ''
+          }}
+        </span>
+      </td>
+      <td>{{ flow.prototext }} {{ flow.L4_DST_PORT }}</td>
+      <td>{{ flow.L7prototext }}</td>
+      <!-- <td>{{ flow.fromdate | date: 'dd.MM.yy HH:mm:ss' }}</td> -->
+      <td>{{ flow.enddate | date: 'dd.MM.yy HH:mm:ss' }}</td>
+      <td>{{ flow.duration }}</td>
+      <td>{{ flow.inb_s }}B</td>
+      <td>{{ flow.outb_s }}B</td>
+    </tr>
+  </table>
+</div>
 <!--
 <div *ngFor="let entry of ipNames | keyvalue">
   {{ entry.key }} : {{ entry.value }}
 </div> -->
 
 <!-- {{ sqlresult[0] }}  *ngIf="ipNames[flow.IP_DST_ADDR_str]"-->
+
+<div class="fs-container">
+  <app-map [x]="15.46" [y]="47.07" [z]="3" [layers]="layers"></app-map>
+</div>

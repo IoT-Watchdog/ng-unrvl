@@ -2,3 +2,18 @@
     height: 16px;
     width: 16px;
 }
+.flowcont {
+    position: absolute;
+    top: 6.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 51%;
+    overflow-y: scroll;
+}
+.fs-container {
+    position: absolute;
+    top: 50%;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+  }
