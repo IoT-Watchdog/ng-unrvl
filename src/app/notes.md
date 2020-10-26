@@ -159,6 +159,8 @@ npm install leaflet
 npm install @types/leaflet
 npm install @asymmetrik/ngx-leaflet
 
+https://github.com/Asymmetrik/ngx-leaflet
+
 in angular.json, "buildOptimizer": false
 
 ## Settingsrewrite

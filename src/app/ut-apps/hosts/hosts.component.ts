@@ -33,7 +33,7 @@ export class HostsComponent implements OnInit {
   public geolocationPosition: Object;
 
   public geojsonMarkerOptions = {
-    radius: 4,
+    radius: 6,
     // fillColor: '#0000ff80',
     color: '#0000ff',
     weight: 1,
@@ -234,28 +234,32 @@ export class HostsComponent implements OnInit {
 
     const point: GeoJSON.Feature<any> = {
       type: 'Feature' as const,
-      properties: {},
+      properties: { IP: ip },
       geometry: {
         type: 'Point',
         coordinates: [data['lon'], data['lat']],
       },
     };
-    point.properties['IP'] = ip;
+    if (data.hasOwnProperty('country') && data['country']) {
+      point.properties['Country'] = data['country'];
+    }
     if (data.hasOwnProperty('city') && data['city']) {
       point.properties['City'] = data['city'];
     }
     if (data.hasOwnProperty('state') && data['state']) {
       point.properties['State'] = data['state'];
     }
+    if (this.ipNames[ip]) {
+      point.properties['Hostname'] = this.ipNames[ip];
+    }
     this.geoJsonFC.features.push(point);
-
 
     console.log(this.geolocationPosition);
 
     if (this.geolocationPosition && this.geolocationPosition['coords']) {
       const linestring: GeoJSON.Feature<any> = {
         type: 'Feature' as const,
-        properties: {},
+        properties: { IP: ip },
         geometry: {
           type: 'LineString',
           coordinates: [
@@ -267,6 +271,9 @@ export class HostsComponent implements OnInit {
           ],
         },
       };
+      if (this.ipNames[ip]) {
+        linestring.properties['Hostname'] = this.ipNames[ip];
+      }
       this.geoJsonLines.features.push(linestring);
     }
 
