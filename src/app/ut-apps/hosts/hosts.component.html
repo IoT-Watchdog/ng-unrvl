@@ -1,5 +1,34 @@
 <h2>Hosts overview</h2>
-<button (click)="reload()">Reload</button>
+<div>
+  <button (click)="reload()">Reload</button>
+  Own Location:
+  <label for="lat">Lat:</label>
+  <input
+    type="text"
+    class="form-control"
+    name="lat"
+    id="lat"
+    [(ngModel)]="ownLat"
+  />
+  <label for="lon">Lon:</label>
+  <input
+    type="text"
+    class="form-control"
+    name="lon"
+    id="lon"
+    [(ngModel)]="ownLon"
+  />
+  <label for="ownCity">Search:</label>
+  <input
+    type="text"
+    class="form-control"
+    name="ownCity"
+    id="ownCity"
+    [(ngModel)]="ownCity"
+  />
+  <button (click)="locSearch()">Go</button>
+</div>
+
 <div class="flowcont">
   <table class="flows" *ngIf="sqlresult && sqlresult.length">
     <tr>

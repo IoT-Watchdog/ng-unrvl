@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-// import * as mysql from 'mysql';
 import { GlobalSettingsService } from '../../core/global-settings.service';
 import { UtFetchdataService } from '../../shared/ut-fetchdata.service';
 import { HelperFunctionsService } from '../../core/helper-functions.service';
@@ -19,7 +18,7 @@ export class HostsComponent implements OnInit {
   public ipLocations = {};
 
   public layers = [];
-  private geoJsonFC: GeoJSON.FeatureCollection<any> = {
+  private geoJsonPoints: GeoJSON.FeatureCollection<any> = {
     type: 'FeatureCollection',
     features: [],
   };
@@ -29,15 +28,25 @@ export class HostsComponent implements OnInit {
   };
 
   public geolocationPosition: Object;
+  public ownLat = 47.07;
+  public ownLon = 15.43;
+  public ownCity = 'Graz';
 
   public geojsonMarkerOptions = {
     radius: 6,
-    // fillColor: '#0000ff80',
     color: '#0000ff',
     weight: 1,
     opacity: 1,
     fillOpacity: 0.8,
   };
+  public geojsonMarkerOptionsHome = {
+    radius: 6,
+    color: '#00ff00',
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.8,
+  };
+  public ownHostName = 'IoT-Watchdog';
 
   constructor(
     private globalSettings: GlobalSettingsService,
@@ -54,7 +63,7 @@ export class HostsComponent implements OnInit {
           (this.geolocationPosition = position), console.log(position);
           const point: GeoJSON.Feature<any> = {
             type: 'Feature' as const,
-            properties: { Host: 'IoT-Watchdog' },
+            properties: { Host: this.ownHostName },
             geometry: {
               type: 'Point',
               coordinates: [
@@ -63,15 +72,10 @@ export class HostsComponent implements OnInit {
               ],
             },
           };
-          this.geoJsonFC.features.push(point);
-          const geojsonMarkerOptions = this.geojsonMarkerOptions;
-          const layer = geoJSON(this.geoJsonFC, {
-            pointToLayer: function (feature, latlng) {
-              return circleMarker(latlng, geojsonMarkerOptions);
-            },
-            onEachFeature: this.h.leafletPopup,
-          });
-          this.layers[0] = layer;
+          this.ownLat = position.coords.latitude;
+          this.ownLon = position.coords.longitude;
+          this.geoJsonPoints.features.push(point);
+          this.updateMap();
         },
         (error) => {
           switch (error.code) {
@@ -250,37 +254,48 @@ export class HostsComponent implements OnInit {
     if (this.ipNames[ip]) {
       point.properties['Hostname'] = this.ipNames[ip];
     }
-    this.geoJsonFC.features.push(point);
+    this.geoJsonPoints.features.push(point);
 
     console.log(this.geolocationPosition);
 
-    if (this.geolocationPosition && this.geolocationPosition['coords']) {
+    console.log(this.layers);
+
+    this.updateLines();
+    this.updateMap();
+  }
+  updateLines() {
+    const newGeoJsonLines: GeoJSON.FeatureCollection<any> = {
+      type: 'FeatureCollection',
+      features: [],
+    };
+    for (let i = 1; i < this.geoJsonPoints.features.length; i++) {
+      // 0 is Iot-Watchdog
+      const element = this.geoJsonPoints.features[i];
       const linestring: GeoJSON.Feature<any> = {
         type: 'Feature' as const,
-        properties: { IP: ip },
+        properties: { IP: element.properties.IP },
         geometry: {
           type: 'LineString',
           coordinates: [
-            [
-              this.geolocationPosition['coords']['longitude'],
-              this.geolocationPosition['coords']['latitude'],
-            ],
-            [data['lon'], data['lat']],
+            [this.ownLon, this.ownLat],
+            [element.geometry.coordinates[0], element.geometry.coordinates[1]],
           ],
         },
       };
-      if (this.ipNames[ip]) {
-        linestring.properties['Hostname'] = this.ipNames[ip];
-      }
-      this.geoJsonLines.features.push(linestring);
+      newGeoJsonLines.features.push(linestring);
     }
-
-    console.log(this.layers);
-
+    this.geoJsonLines = newGeoJsonLines;
+  }
+  updateMap() {
     const geojsonMarkerOptions = this.geojsonMarkerOptions;
-    const layer = geoJSON(this.geoJsonFC, {
+    const geojsonMarkerOptionsHome = this.geojsonMarkerOptionsHome;
+    const layer = geoJSON(this.geoJsonPoints, {
       pointToLayer: function (feature, latlng) {
-        return circleMarker(latlng, geojsonMarkerOptions);
+        if (feature['properties']['Host'] == 'IoT-Watchdog') {
+          return circleMarker(latlng, geojsonMarkerOptionsHome);
+        } else {
+          return circleMarker(latlng, geojsonMarkerOptions);
+        }
       },
       onEachFeature: this.h.leafletPopup,
     });
@@ -290,5 +305,36 @@ export class HostsComponent implements OnInit {
       onEachFeature: this.h.leafletPopup,
     });
     this.layers[1] = linelayer;
+  }
+  locSearch() {
+    this.utHTTP
+      .getHTTPData(
+        'https://nominatim.openstreetmap.org/search?q=' +
+          this.ownCity +
+          '&format=geojson'
+      )
+      .subscribe((data: Object) => this.handleNominatimResult(data));
+  }
+  handleNominatimResult(data: Object) {
+    console.log(data);
+    if (data.hasOwnProperty('type') && data['type'] == 'FeatureCollection') {
+      if (data['features'].length > 0) {
+        const firstfeature = data['features'][0];
+        if (firstfeature['geometry']['type'] == 'Point') {
+          this.ownLon = firstfeature['geometry']['coordinates'][0];
+          this.ownLat = firstfeature['geometry']['coordinates'][1];
+          this.geoJsonPoints.features[0]['geometry']['coordinates'] =
+            firstfeature['geometry']['coordinates'];
+
+          this.updateLines();
+          this.updateMap();
+        } else {
+          console.error('no know geometry type');
+        }
+      } else {
+        alert('Error, no results for Location found');
+        return;
+      }
+    }
   }
 }
