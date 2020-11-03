@@ -3,6 +3,7 @@ import { GlobalSettingsService } from '../../core/global-settings.service';
 import { UtFetchdataService } from '../../shared/ut-fetchdata.service';
 import { HelperFunctionsService } from '../../core/helper-functions.service';
 import { geoJSON, circleMarker } from 'leaflet';
+import { forEach } from 'lodash-es';
 
 @Component({
   selector: 'app-hosts',
@@ -13,8 +14,11 @@ export class HostsComponent implements OnInit {
   public API = '';
 
   public sqlresult: Array<any>;
+  public inetCons: Array<any> = [];
+  public localCons: Array<any> = [];
 
   public ipNames = { '192.168.3.1': 'Iot-Watchdog Gateway' };
+  public ipCons = {}; // IP: { $port: { protocol: "TCP", L7: *, last: , dur:, in:, out: }}
   public ipLocations = {};
 
   public layers = [];
@@ -31,6 +35,8 @@ export class HostsComponent implements OnInit {
   public ownLat = 47.07;
   public ownLon = 15.43;
   public ownCity = 'Graz';
+
+  private coordinateTable = {}; // { $lon: { $lat: $count } } //lat, lon rounded to 4 digits
 
   public geojsonMarkerOptions = {
     radius: 6,
@@ -102,6 +108,8 @@ export class HostsComponent implements OnInit {
   }
   reload() {
     this.sqlresult = [];
+    this.localCons = [];
+    this.inetCons = [];
     this.utHTTP
       .getHTTPData(this.API + 'sql/my.php')
       .subscribe((data: Object) => this.handleMyQuery(data));
@@ -155,7 +163,10 @@ export class HostsComponent implements OnInit {
         this.ipNames[row['IP_SRC_ADDR_str']] = '...';
       }
       row['IP_DST_ADDR_str'] = this.h.intToIPv4(row['IP_DST_ADDR']);
-      const dst_is_local = row['IP_DST_ADDR_str'].startsWith('192.168.');
+      const dst_is_local =
+        row['IP_DST_ADDR_str'].startsWith('192.168.') ||
+        row['IP_DST_ADDR_str'].startsWith('255.') ||
+        row['IP_DST_ADDR_str'].startsWith('224.');
       // console.log(row, 'src_is_local',src_is_local, 'dst_is_local', dst_is_local);
       if (row['IP_DST_ADDR_str'] == '255.255.255.255') {
         this.ipNames[row['IP_DST_ADDR_str']] = 'Broadcast';
@@ -191,10 +202,55 @@ export class HostsComponent implements OnInit {
       row['outb_s'] = this.h.intBtoStrB(parseInt(row['OUT_BYTES']));
       row['prototext'] = this.h.numProtoToText(parseInt(row['PROTOCOL']));
       row['L7prototext'] = this.h.numL7ProtoToText(parseInt(row['L7_PROTO']));
+
+      const conObj = {
+        protocol: row['prototext'],
+        L7: row['L7prototext'],
+        // in: row['inb_s'], // TODO sum up - how?
+        // out: row['outb_s'],
+        last: row['enddate'],
+        duration: row['duration'],
+      };
+      const serverIP = src_is_local
+        ? row['IP_DST_ADDR_str']
+        : row['IP_SRC_ADDR_str'];
+      const conPort = src_is_local ? row['L4_DST_PORT'] : row['L4_SRC_PORT'];
+      if (!this.ipCons.hasOwnProperty(serverIP)) {
+        const con = {};
+        con[conPort] = conObj;
+        this.ipCons[serverIP] = con;
+      } else {
+        if (!this.ipCons[serverIP].hasOwnProperty(conPort)) {
+          this.ipCons[serverIP][conPort] = conObj;
+        } else {
+          const presetCon = this.ipCons[serverIP][conPort];
+          // already there, update
+          if (conObj.last.valueOf() > presetCon.last.valueOf()) {
+            presetCon.last = conObj.last;
+          }
+        }
+      }
+
       uniqueDataArr.push(row);
     }
 
     this.sqlresult = uniqueDataArr;
+
+    for (let i = 0; i < uniqueDataArr.length; i++) {
+      const row = uniqueDataArr[i];
+      const src_is_local = row['IP_SRC_ADDR_str'].startsWith('192.168.');
+      const dst_is_local = row['IP_DST_ADDR_str'].startsWith('192.168.');
+      if (
+        (src_is_local && dst_is_local) ||
+        row['IP_DST_ADDR_str'].startsWith('255.') ||
+        row['IP_DST_ADDR_str'].startsWith('224.')
+      ) {
+        this.localCons.push(row);
+        continue;
+      }
+      this.inetCons.push(row);
+    }
+    console.log('this.ipCons', this.ipCons);
   }
   getNameforIP(IP: string) {
     this.utHTTP
@@ -233,6 +289,22 @@ export class HostsComponent implements OnInit {
     const ip = data['IP'];
     this.ipLocations[ip] = data;
     console.log('new location for', ip, data);
+    const str_Lon = (Math.round(data['lon'] * 10000) / 10000).toString();
+    const str_Lat = (Math.round(data['lat'] * 10000) / 10000).toString();
+    if (
+      this.coordinateTable.hasOwnProperty(str_Lon) &&
+      this.coordinateTable[str_Lon].hasOwnProperty(str_Lat)
+    ) {
+      this.coordinateTable[str_Lon][str_Lat] += 1;
+    } else {
+      if (this.coordinateTable.hasOwnProperty(str_Lon)) {
+        this.coordinateTable[str_Lon][str_Lat] = 1;
+      } else {
+        const latO = {};
+        latO[str_Lat] = 1;
+        this.coordinateTable[str_Lon] = latO;
+      }
+    }
 
     const point: GeoJSON.Feature<any> = {
       type: 'Feature' as const,
@@ -271,22 +343,51 @@ export class HostsComponent implements OnInit {
     for (let i = 1; i < this.geoJsonPoints.features.length; i++) {
       // 0 is Iot-Watchdog
       const element = this.geoJsonPoints.features[i];
+      // if coordinates are used more than once, draw additional lines...
+      const lon = element.geometry.coordinates[0];
+      const lonStr = (Math.round(lon * 10000) / 10000).toString();
+      const lat = element.geometry.coordinates[1];
+      const latStr = (Math.round(lat * 10000) / 10000).toString();
+      if (
+        this.coordinateTable.hasOwnProperty(lonStr) &&
+        this.coordinateTable[lonStr].hasOwnProperty(latStr)
+      ) {
+      }
       const linestring: GeoJSON.Feature<any> = {
         type: 'Feature' as const,
-        properties: { IP: element.properties.IP },
+        properties: {},
         geometry: {
           type: 'LineString',
           coordinates: [
             [this.ownLon, this.ownLat],
-            [element.geometry.coordinates[0], element.geometry.coordinates[1]],
+            [lon, lat],
           ],
         },
       };
+      linestring.properties = element.properties;
       newGeoJsonLines.features.push(linestring);
     }
     this.geoJsonLines = newGeoJsonLines;
   }
   updateMap() {
+    for (let i = 0; i < this.geoJsonPoints.features.length; i++) {
+      const element = this.geoJsonPoints.features[i];
+      if (element.properties.hasOwnProperty('IP')) {
+        const ip = element.properties['IP'];
+        if (this.ipNames[ip]) {
+          element.properties['Hostname'] = this.ipNames[ip];
+        }
+        if (this.ipCons[ip]) {
+          for (const port in this.ipCons[ip]) {
+            if (Object.prototype.hasOwnProperty.call(this.ipCons[ip], port)) {
+              const con = this.ipCons[ip][port];
+              element.properties['Port ' + port + '/' + con.protocol] = con.L7;
+            }
+          }
+        }
+      }
+    }
+
     const geojsonMarkerOptions = this.geojsonMarkerOptions;
     const geojsonMarkerOptionsHome = this.geojsonMarkerOptionsHome;
     const layer = geoJSON(this.geoJsonPoints, {

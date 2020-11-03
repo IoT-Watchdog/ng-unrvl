@@ -30,25 +30,28 @@
 </div>
 
 <div class="flowcont">
-  <table class="flows" *ngIf="sqlresult && sqlresult.length">
+  <h3>Internet Connections</h3>
+  <table class="flows" *ngIf="inetCons && inetCons.length">
     <tr>
       <!-- <th>idx</th> -->
-      <th>IP_SRC_ADDR</th>
-      <th>IP_DST_ADDR</th>
+      <th>Source IP</th>
+      <th>Dest. IP</th>
       <th>remote hostname</th>
       <th>remote location</th>
-      <th>Prt/Port</th>
-      <th>L7_PROTO</th>
+      <th>L4 Prot</th>
+      <th>Src. Port</th>
+      <th>Dest. Port</th>
+      <th>L7 Protocol</th>
       <!-- <th>Begin</th> -->
       <th>Last Transfer</th>
       <th>Duration (s)</th>
       <th>In</th>
       <th>Out</th>
     </tr>
-    <tr *ngFor="let flow of sqlresult">
+    <tr *ngFor="let flow of inetCons">
       <!-- <td>{{ flow.idx }}</td> -->
-      <td>{{ flow.IP_SRC_ADDR_str }}</td>
-      <td>
+      <td class="r">{{ flow.IP_SRC_ADDR_str }}</td>
+      <td class="r">
         {{ flow.IP_DST_ADDR_str }}
         <a
           href="{{
@@ -95,13 +98,67 @@
           }}
         </span>
       </td>
-      <td>{{ flow.prototext }} {{ flow.L4_DST_PORT }}</td>
+      <td>{{ flow.prototext }}</td>
+      <td class="r">{{ flow.L4_SRC_PORT }}</td>
+      <td class="r">{{ flow.L4_DST_PORT }}</td>
       <td>{{ flow.L7prototext }}</td>
       <!-- <td>{{ flow.fromdate | date: 'dd.MM.yy HH:mm:ss' }}</td> -->
       <td>{{ flow.enddate | date: 'dd.MM.yy HH:mm:ss' }}</td>
-      <td>{{ flow.duration }}</td>
-      <td>{{ flow.inb_s }}B</td>
-      <td>{{ flow.outb_s }}B</td>
+      <td class="r">{{ flow.duration }}</td>
+      <td class="r">{{ flow.inb_s }}B</td>
+      <td class="r">{{ flow.outb_s }}B</td>
+    </tr>
+  </table>
+  <h3>Local Connections</h3>
+  <table class="flows" *ngIf="localCons && localCons.length">
+    <tr>
+      <!-- <th>idx</th> -->
+      <th>Source IP</th>
+      <th>Dest. IP</th>
+      <th>remote hostname</th>
+      <th>L4 Prot</th>
+      <th>Src. Port</th>
+      <th>Dest. Port</th>
+      <th>L7 Protocol</th>
+      <!-- <th>Begin</th> -->
+      <th>Last Transfer</th>
+      <th>Duration (s)</th>
+      <th>In</th>
+      <th>Out</th>
+    </tr>
+    <tr *ngFor="let flow of localCons">
+      <!-- <td>{{ flow.idx }}</td> -->
+      <td class="r">{{ flow.IP_SRC_ADDR_str }}</td>
+      <td class="r">
+        {{ flow.IP_DST_ADDR_str }}
+        <a
+          href="{{
+            globalSettings.server.baseurl
+          }}:3000/lua/host_details.lua?host={{ flow.IP_DST_ADDR_str }}"
+          target="_blank"
+          ><img class="ntop" src="/assets/ntop_link.png"
+        /></a>
+      </td>
+      <td>
+        <span
+          >{{
+            ipNames[flow.IP_DST_ADDR_str]
+              ? ipNames[flow.IP_DST_ADDR_str]
+              : ipNames[flow.IP_SRC_ADDR_str]
+              ? ipNames[flow.IP_SRC_ADDR_str]
+              : '...'
+          }}
+        </span>
+      </td>
+      <td>{{ flow.prototext }}</td>
+      <td class="r">{{ flow.L4_SRC_PORT }}</td>
+      <td class="r">{{ flow.L4_DST_PORT }}</td>
+      <td>{{ flow.L7prototext }}</td>
+      <!-- <td>{{ flow.fromdate | date: 'dd.MM.yy HH:mm:ss' }}</td> -->
+      <td>{{ flow.enddate | date: 'dd.MM.yy HH:mm:ss' }}</td>
+      <td class="r">{{ flow.duration }}</td>
+      <td class="r">{{ flow.inb_s }}B</td>
+      <td class="r">{{ flow.outb_s }}B</td>
     </tr>
   </table>
 </div>
