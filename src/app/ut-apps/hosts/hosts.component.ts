@@ -21,6 +21,8 @@ export class HostsComponent implements OnInit {
   public ipCons = {}; // IP: { $port: { protocol: "TCP", L7: *, last: , dur:, in:, out: }}
   public ipLocations = {};
 
+  private openHostNameQueries = 0;
+
   public layers = [];
   private geoJsonPoints: GeoJSON.FeatureCollection<any> = {
     type: 'FeatureCollection',
@@ -35,7 +37,6 @@ export class HostsComponent implements OnInit {
   public ownLat = 47.07;
   public ownLon = 15.43;
   public ownCity = 'Graz';
-
   private coordinateTable = {}; // { $lon: { $lat: $count } } //lat, lon rounded to 4 digits
 
   public geojsonMarkerOptions = {
@@ -251,8 +252,11 @@ export class HostsComponent implements OnInit {
       this.inetCons.push(row);
     }
     console.log('this.ipCons', this.ipCons);
+    this.updateLines();
+    this.updateMap();
   }
   getNameforIP(IP: string) {
+    this.openHostNameQueries += 1;
     this.utHTTP
       .getHTTPData(this.API + 'system/ip2name.php?ip=' + IP)
       .subscribe((data: Object) => this.handleIPname(data));
@@ -260,6 +264,11 @@ export class HostsComponent implements OnInit {
   handleIPname(data: Object) {
     if (data.hasOwnProperty('success') && data['success'] == false) {
       console.error('handleIPname error, ret:', data);
+      if (this.openHostNameQueries == 1) {
+        this.updateLines();
+        this.updateMap();
+      }
+      this.openHostNameQueries -= 1;
       return;
     }
 
@@ -274,6 +283,11 @@ export class HostsComponent implements OnInit {
       }
     }
     console.log(this.ipNames);
+    if (this.openHostNameQueries == 1) {
+      this.updateLines();
+      this.updateMap();
+    }
+    this.openHostNameQueries -= 1;
   }
 
   getLocationForIP(IP: string) {
