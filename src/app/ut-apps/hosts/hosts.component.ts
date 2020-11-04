@@ -37,7 +37,7 @@ export class HostsComponent implements OnInit {
   public ownLat = 47.07;
   public ownLon = 15.43;
   public ownCity = 'Graz';
-  private coordinateTable = {}; // { $lon: { $lat: $count } } //lat, lon rounded to 4 digits
+  private coordinateTable = {}; // { $lon: { $lat: [IP1, IP2] } } //lat, lon rounded to 4 digits
 
   public geojsonMarkerOptions = {
     radius: 6,
@@ -309,13 +309,13 @@ export class HostsComponent implements OnInit {
       this.coordinateTable.hasOwnProperty(str_Lon) &&
       this.coordinateTable[str_Lon].hasOwnProperty(str_Lat)
     ) {
-      this.coordinateTable[str_Lon][str_Lat] += 1;
+      this.coordinateTable[str_Lon][str_Lat].push(ip);
     } else {
       if (this.coordinateTable.hasOwnProperty(str_Lon)) {
-        this.coordinateTable[str_Lon][str_Lat] = 1;
+        this.coordinateTable[str_Lon][str_Lat] = [ip];
       } else {
         const latO = {};
-        latO[str_Lat] = 1;
+        latO[str_Lat] = [ip];
         this.coordinateTable[str_Lon] = latO;
       }
     }
@@ -357,6 +357,9 @@ export class HostsComponent implements OnInit {
     for (let i = 1; i < this.geoJsonPoints.features.length; i++) {
       // 0 is Iot-Watchdog
       const element = this.geoJsonPoints.features[i];
+
+      const coordinates = [[this.ownLon, this.ownLat]];
+
       // if coordinates are used more than once, draw additional lines...
       const lon = element.geometry.coordinates[0];
       const lonStr = (Math.round(lon * 10000) / 10000).toString();
@@ -364,18 +367,46 @@ export class HostsComponent implements OnInit {
       const latStr = (Math.round(lat * 10000) / 10000).toString();
       if (
         this.coordinateTable.hasOwnProperty(lonStr) &&
-        this.coordinateTable[lonStr].hasOwnProperty(latStr)
+        this.coordinateTable[lonStr].hasOwnProperty(latStr) &&
+        this.coordinateTable[lonStr][latStr].length > 0
       ) {
+        console.log(
+          'more than 0 server @ location',
+          lonStr,
+          latStr,
+          this.coordinateTable[lonStr][latStr]
+        );
+        // second connection to same location
+        // insert intermediate coordinates
+        let connection_nr = 0
+        for (let i = 0; i < this.coordinateTable[lonStr][latStr].length; i++) {
+          const server = this.coordinateTable[lonStr][latStr][i];
+          if (server == element.properties['IP']) {
+            connection_nr = i;
+            break;
+          }
+        }
+
+        const d_lon = this.ownLon - lon,
+          d_lat = this.ownLat - lat;
+        const distance = Math.sqrt(d_lon * d_lon + d_lat * d_lat);
+        const offset = distance / 10 * connection_nr;
+        const angle = Math.atan(d_lat / d_lon);
+        const y_offset = offset * Math.cos(angle);
+        const x_offset = Math.abs(offset * Math.sin(angle));
+        const intermediatePoint = [
+          (this.ownLon + lon) / 2 + x_offset,
+          (this.ownLat + lat) / 2 + y_offset,
+        ];
+        coordinates.push(intermediatePoint);
       }
+      coordinates.push([lon, lat]);
       const linestring: GeoJSON.Feature<any> = {
         type: 'Feature' as const,
         properties: {},
         geometry: {
           type: 'LineString',
-          coordinates: [
-            [this.ownLon, this.ownLat],
-            [lon, lat],
-          ],
+          coordinates: coordinates,
         },
       };
       linestring.properties = element.properties;
