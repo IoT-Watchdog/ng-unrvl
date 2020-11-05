@@ -393,24 +393,30 @@ export class HostsComponent implements OnInit {
         const logdist = Math.log(distance);
         // const offsetdistance =
         //   logdist > distance / 10 ? distance / 10 : logdist;
-        const offsetdistance = distance > 10 ? Math.log(distance) : distance / 10;
+        const offsetdistance =
+          distance > 10 ? Math.log(distance) / 2 : distance / 10;
         const offset = offsetdistance * (connection_nr + 1);
         const angle = Math.atan(d_lat / d_lon);
         const y_offset = Math.abs(offset * Math.cos(angle));
         const x_offset = -offset * Math.sin(angle);
         const firstIntP = [
-          this.ownLon - d_lon / 4 + (x_offset / 3) * 2,
-          this.ownLat - d_lat / 4 + (y_offset / 3) * 2,
+          this.ownLon - d_lon / 5 + (x_offset / 3) * 2,
+          this.ownLat - d_lat / 5 + (y_offset / 3) * 2,
         ];
         coordinates.push(firstIntP);
         const intermediatePoint = [
-          (this.ownLon + lon) / 2 + x_offset,
-          (this.ownLat + lat) / 2 + y_offset,
+          this.ownLon - (d_lon / 5) * 2 + x_offset,
+          this.ownLat - (d_lat / 5) * 2 + y_offset,
         ];
         coordinates.push(intermediatePoint);
+        const intermediatePoint2 = [
+          this.ownLon - (d_lon / 5) * 3 + x_offset,
+          this.ownLat - (d_lat / 5) * 3 + y_offset,
+        ];
+        coordinates.push(intermediatePoint2);
         const lastIntP = [
-          this.ownLon - (d_lon / 4) * 3 + (x_offset / 3) * 2,
-          this.ownLat - (d_lat / 4) * 3 + (y_offset / 3) * 2,
+          this.ownLon - (d_lon / 5) * 4 + (x_offset / 3) * 2,
+          this.ownLat - (d_lat / 5) * 4 + (y_offset / 3) * 2,
         ];
         coordinates.push(lastIntP);
       }
@@ -434,7 +440,13 @@ export class HostsComponent implements OnInit {
       if (element.properties.hasOwnProperty('IP')) {
         const ip = element.properties['IP'];
         if (this.ipNames[ip]) {
-          element.properties['Hostname'] = this.ipNames[ip];
+          element.properties['Hostname'] =
+            this.ipNames[ip] +
+            '<a href="' +
+            this.globalSettings.server.baseurl +
+            ':3000/lua/host_details.lua?host=' +
+            ip +
+            '" target="_blank"><img style="width:16px" src="/assets/ntop_link.png"/></a>';
         }
         if (this.ipCons[ip]) {
           for (const port in this.ipCons[ip]) {
