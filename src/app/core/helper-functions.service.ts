@@ -799,14 +799,21 @@ export class HelperFunctionsService {
   intToIPv4(intip: string) {
     const ip_i = parseInt(intip);
     const hex_str = ip_i.toString(16);
+    const a = Math.floor(ip_i / 16777216),
+      b = parseInt(hex_str.substr(2, 2), 16),
+      c = parseInt(hex_str.substr(4, 2), 16),
+      d = parseInt(hex_str.substr(6, 2), 16);
+    if (a === NaN || b === NaN || c === NaN || d === NaN) {
+      console.error(intip, a, b, c, d);
+    }
     return (
-      Math.floor(ip_i / 16777216).toString(10) +
+      a.toString(10) +
       '.' +
-      parseInt(hex_str.substr(2, 2), 16).toString(10) +
+      b.toString(10) +
       '.' +
-      parseInt(hex_str.substr(4, 2), 16).toString(10) +
+      c.toString(10) +
       '.' +
-      parseInt(hex_str.substr(6, 2), 16).toString(10)
+      d.toString(10)
     );
   }
   intBtoStrB(intb: number) {
@@ -815,7 +822,7 @@ export class HelperFunctionsService {
     let currentprefix = '';
 
     while (newNr > 1024) {
-      newNr = Math.round(newNr / 1024 * 10) / 10;
+      newNr = Math.round((newNr / 1024) * 10) / 10;
       currentprefix = prefixes.shift();
     }
     return newNr.toString(10) + currentprefix;
@@ -840,8 +847,8 @@ export class HelperFunctionsService {
     if (proto == 39) return 'TLS'; // TLS.signal / DNS.playstore
     if (proto == 51) return 'IMAPS';
     if (proto == 81) return 'ICMP';
-    if (proto == 82) return  'IGMP';
-    if (proto == 91 ) return 'TLS';
+    if (proto == 82) return 'IGMP';
+    if (proto == 91) return 'TLS';
     if (proto == 102) return 'ICMPv6';
     if (proto == 103) return 'DHCPV6';
     if (proto == 125) return 'TLS.skype';
