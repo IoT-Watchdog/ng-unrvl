@@ -835,6 +835,7 @@ export class HelperFunctionsService {
     return proto.toString(10);
   }
   numL7ProtoToText(proto: number): string {
+    // source: http://192.168.0.248:3000/lua/flows_stats.lua - hover over "Application"
     if (proto == 0) return 'unknown';
     if (proto == 4) return 'IMAP';
     if (proto == 5) return 'DNS';
@@ -851,6 +852,7 @@ export class HelperFunctionsService {
     if (proto == 91) return 'TLS';
     if (proto == 102) return 'ICMPv6';
     if (proto == 103) return 'DHCPV6';
+    if (proto == 120) return 'DNS.Twitter';
     if (proto == 125) return 'TLS.skype';
     if (proto == 126) return 'TLS.Google'; // G+, TLS.Google
     if (proto == 142) return 'TLS.whatsapp';
