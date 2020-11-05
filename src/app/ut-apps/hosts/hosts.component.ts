@@ -378,7 +378,7 @@ export class HostsComponent implements OnInit {
         );
         // second connection to same location
         // insert intermediate coordinates
-        let connection_nr = 0
+        let connection_nr = 0;
         for (let i = 0; i < this.coordinateTable[lonStr][latStr].length; i++) {
           const server = this.coordinateTable[lonStr][latStr][i];
           if (server == element.properties['IP']) {
@@ -390,15 +390,29 @@ export class HostsComponent implements OnInit {
         const d_lon = this.ownLon - lon,
           d_lat = this.ownLat - lat;
         const distance = Math.sqrt(d_lon * d_lon + d_lat * d_lat);
-        const offset = distance / 10 * connection_nr;
+        const logdist = Math.log(distance);
+        // const offsetdistance =
+        //   logdist > distance / 10 ? distance / 10 : logdist;
+        const offsetdistance = distance > 10 ? Math.log(distance) : distance / 10;
+        const offset = offsetdistance * (connection_nr + 1);
         const angle = Math.atan(d_lat / d_lon);
-        const y_offset = offset * Math.cos(angle);
-        const x_offset = Math.abs(offset * Math.sin(angle));
+        const y_offset = Math.abs(offset * Math.cos(angle));
+        const x_offset = -offset * Math.sin(angle);
+        const firstIntP = [
+          this.ownLon - d_lon / 4 + (x_offset / 3) * 2,
+          this.ownLat - d_lat / 4 + (y_offset / 3) * 2,
+        ];
+        coordinates.push(firstIntP);
         const intermediatePoint = [
           (this.ownLon + lon) / 2 + x_offset,
           (this.ownLat + lat) / 2 + y_offset,
         ];
         coordinates.push(intermediatePoint);
+        const lastIntP = [
+          this.ownLon - (d_lon / 4) * 3 + (x_offset / 3) * 2,
+          this.ownLat - (d_lat / 4) * 3 + (y_offset / 3) * 2,
+        ];
+        coordinates.push(lastIntP);
       }
       coordinates.push([lon, lat]);
       const linestring: GeoJSON.Feature<any> = {
