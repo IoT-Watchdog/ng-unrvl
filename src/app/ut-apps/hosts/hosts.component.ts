@@ -521,6 +521,28 @@ export class HostsComponent implements OnInit, OnDestroy {
 
     const linelayer = geoJSON(this.geoJsonLines, {
       onEachFeature: this.h.leafletPopup,
+      style: function (feature) {
+        const color = { color: 'yellow' };
+        for (const key in feature.properties) {
+          if (Object.prototype.hasOwnProperty.call(feature.properties, key)) {
+            const value = feature.properties[key];
+            if (key.startsWith('Port ')) {
+              if (value.search('lock-fa.png') > -1) {
+                color.color = 'green';
+              }
+              if (value.search('locko-fa.png') > -1) {
+                color.color = 'red';
+                return color;
+              }
+              if (value.search(' [?]') > -1) {
+                color.color = 'yellow';
+                return color;
+              }
+            }
+          }
+        }
+        return color;
+      },
     });
     this.layers[1] = linelayer;
   }
