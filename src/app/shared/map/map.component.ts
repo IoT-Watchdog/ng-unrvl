@@ -68,8 +68,8 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.map.clearAllEventListeners;
-    this.map.remove();
+    this.map.clearAllEventListeners();
+    // this.map.remove(); //in newer angular, this throws an error
   }
 
   onMapReady(map: Map) {

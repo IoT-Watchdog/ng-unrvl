@@ -20,3 +20,9 @@
 td.r {
   text-align: right;
 }
+.icon {
+  text-align: center;
+}
+.icon img {
+  width: 16px;
+}

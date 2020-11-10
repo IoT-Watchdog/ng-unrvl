@@ -803,8 +803,9 @@ export class HelperFunctionsService {
       b = parseInt(hex_str.substr(2, 2), 16),
       c = parseInt(hex_str.substr(4, 2), 16),
       d = parseInt(hex_str.substr(6, 2), 16);
-    if (a === NaN || b === NaN || c === NaN || d === NaN) {
-      console.error(intip, a, b, c, d);
+    if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d)) {
+      // console.error(intip, a, b, c, d);
+      return '-';
     }
     return (
       a.toString(10) +
@@ -852,6 +853,7 @@ export class HelperFunctionsService {
     if (proto == 91) return 'TLS';
     if (proto == 102) return 'ICMPv6';
     if (proto == 103) return 'DHCPV6';
+    if (proto == 119) return 'DNS.Facebook';
     if (proto == 120) return 'DNS.Twitter';
     if (proto == 125) return 'TLS.skype';
     if (proto == 126) return 'TLS.Google'; // G+, TLS.Google
@@ -865,5 +867,31 @@ export class HelperFunctionsService {
     if (proto == 228) return 'TLS.playstore'; //  / DNS.playstore
     if (proto == 239) return 'G-DNS';
     return proto.toString(10);
+  }
+  guessSecurityStatus(port1, port2, protocol) {
+    const securePorts = [443, 993, 22];
+    const secureProts = ['IMAPS', 'TLS'];
+    const port1Int = parseInt(port1);
+    const port2Int = parseInt(port2);
+    if (
+      securePorts.indexOf(port1Int) > -1 ||
+      securePorts.indexOf(port2Int) > -1 ||
+      secureProts.indexOf(protocol) > -1
+    ) {
+      return 'S';
+    }
+    for (let i = 0; i < secureProts.length; i++) {
+      if (protocol.search(secureProts[i]) > -1) {
+        return 'S';
+      }
+    }
+    const insecurePorts = [80, 21];
+    if (
+      insecurePorts.indexOf(port1Int) > -1 ||
+      insecurePorts.indexOf(port2Int) > -1
+    ) {
+      return '!';
+    }
+    return '?';
   }
 }

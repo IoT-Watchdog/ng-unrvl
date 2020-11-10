@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { GlobalSettingsService } from '../../core/global-settings.service';
 import { UtFetchdataService } from '../../shared/ut-fetchdata.service';
 import { HelperFunctionsService } from '../../core/helper-functions.service';
@@ -10,7 +10,7 @@ import { forEach } from 'lodash-es';
   templateUrl: './hosts.component.html',
   styleUrls: ['./hosts.component.css'],
 })
-export class HostsComponent implements OnInit {
+export class HostsComponent implements OnInit, OnDestroy {
   public API = '';
 
   public sqlresult: Array<any>;
@@ -19,6 +19,7 @@ export class HostsComponent implements OnInit {
 
   public ipNames = { '192.168.3.1': 'Iot-Watchdog Gateway' };
   public ipCons = {}; // IP: { $port: { protocol: "TCP", L7: *, last: , dur:, in:, out: }}
+  public ipInfo = { '192.168.3.1': 'Iot-Watchdog Gateway' }; // info provided by ntopng
   public ipLocations = {};
 
   private openHostNameQueries = 0;
@@ -107,6 +108,16 @@ export class HostsComponent implements OnInit {
       .subscribe((data: Object) => this.handleMyQuery(data));
     // this.getNameforIP('192.27.2.3');
   }
+  ngOnDestroy() {
+    this.layers = [];
+  }
+  reset() {
+    while (this.layers.length > 0) {
+      this.layers.pop();
+    }
+    console.log(this.layers);
+  }
+
   reload() {
     this.sqlresult = [];
     this.localCons = [];
@@ -155,7 +166,9 @@ export class HostsComponent implements OnInit {
       }
 
       row['IP_SRC_ADDR_str'] = this.h.intToIPv4(row['IP_SRC_ADDR']);
-      const src_is_local = row['IP_SRC_ADDR_str'].startsWith('192.168.');
+      const src_is_local =
+        row['IP_SRC_ADDR_str'].startsWith('192.168.') ||
+        row['IP_SRC_ADDR_str'] == '-';
       if (
         !src_is_local &&
         !this.ipNames.hasOwnProperty(row['IP_SRC_ADDR_str'])
@@ -167,7 +180,8 @@ export class HostsComponent implements OnInit {
       const dst_is_local =
         row['IP_DST_ADDR_str'].startsWith('192.168.') ||
         row['IP_DST_ADDR_str'].startsWith('255.') ||
-        row['IP_DST_ADDR_str'].startsWith('224.');
+        row['IP_DST_ADDR_str'].startsWith('224.') ||
+        row['IP_DST_ADDR_str'] == '-';
       // console.log(row, 'src_is_local',src_is_local, 'dst_is_local', dst_is_local);
       if (row['IP_DST_ADDR_str'] == '255.255.255.255') {
         this.ipNames[row['IP_DST_ADDR_str']] = 'Broadcast';
@@ -193,6 +207,9 @@ export class HostsComponent implements OnInit {
         this.getLocationForIP(row['IP_DST_ADDR_str']);
         this.ipLocations[row['IP_DST_ADDR_str']] = { wait: true };
       }
+      if (!this.ipInfo.hasOwnProperty(row['IP_DST_ADDR_str'])) {
+        this.ipInfo[row['IP_DST_ADDR_str']] = row['INFO'];
+      }
 
       const begin = parseInt(row['FIRST_SWITCHED']);
       const end = parseInt(row['LAST_SWITCHED']);
@@ -203,6 +220,16 @@ export class HostsComponent implements OnInit {
       row['outb_s'] = this.h.intBtoStrB(parseInt(row['OUT_BYTES']));
       row['prototext'] = this.h.numProtoToText(parseInt(row['PROTOCOL']));
       row['L7prototext'] = this.h.numL7ProtoToText(parseInt(row['L7_PROTO']));
+      row['secIcon'] = this.guessSecIcon(
+        row['L4_SRC_PORT'],
+        row['L4_DST_PORT'],
+        row['L7prototext']
+      );
+      row['sec'] = this.h.guessSecurityStatus(
+        row['L4_SRC_PORT'],
+        row['L4_DST_PORT'],
+        row['L7prototext']
+      );
 
       const conObj = {
         protocol: row['prototext'],
@@ -337,8 +364,14 @@ export class HostsComponent implements OnInit {
     if (data.hasOwnProperty('state') && data['state']) {
       point.properties['State'] = data['state'];
     }
+    if (this.ipInfo.hasOwnProperty(ip)) {
+      point.properties['Info'] = this.ipInfo[ip];
+    }
     if (this.ipNames[ip]) {
       point.properties['Hostname'] = this.ipNames[ip];
+    }
+    if (point.properties['Hostname'] == 'unknown') {
+      delete point.properties['Hostname'];
     }
     this.geoJsonPoints.features.push(point);
 
@@ -370,12 +403,12 @@ export class HostsComponent implements OnInit {
         this.coordinateTable[lonStr].hasOwnProperty(latStr) &&
         this.coordinateTable[lonStr][latStr].length > 0
       ) {
-        console.log(
-          'more than 0 server @ location',
-          lonStr,
-          latStr,
-          this.coordinateTable[lonStr][latStr]
-        );
+        // console.log(
+        //   'more than 0 server @ location',
+        //   lonStr,
+        //   latStr,
+        //   this.coordinateTable[lonStr][latStr]
+        // );
         // second connection to same location
         // insert intermediate coordinates
         let connection_nr = 0;
@@ -439,10 +472,17 @@ export class HostsComponent implements OnInit {
       const element = this.geoJsonPoints.features[i];
       if (element.properties.hasOwnProperty('IP')) {
         const ip = element.properties['IP'];
+        element.properties['IP'] = ip;
         if (this.ipNames[ip]) {
-          element.properties['Hostname'] =
-            this.ipNames[ip] +
-            '<a href="' +
+          element.properties['Hostname'] = this.ipNames[ip];
+        }
+        if (
+          element.properties.hasOwnProperty('Info') &&
+          element.properties['Info'].indexOf('host_details.lua') == -1
+        ) {
+          element.properties['Info'] =
+            element.properties['Info'] +
+            '&nbsp;<a href="' +
             this.globalSettings.server.baseurl +
             ':3000/lua/host_details.lua?host=' +
             ip +
@@ -452,7 +492,13 @@ export class HostsComponent implements OnInit {
           for (const port in this.ipCons[ip]) {
             if (Object.prototype.hasOwnProperty.call(this.ipCons[ip], port)) {
               const con = this.ipCons[ip][port];
-              element.properties['Port ' + port + '/' + con.protocol] = con.L7;
+              const k = 'Port ' + port + '/' + con.protocol;
+              const value =
+                con.L7.indexOf('.') > -1
+                  ? con.L7.replace('.', ' (') + ')'
+                  : con.L7;
+              element.properties[k] = value;
+              element.properties[k] += ' ' + this.guessSecIcon(port, 0, con.L7);
             }
           }
         }
@@ -478,6 +524,18 @@ export class HostsComponent implements OnInit {
     });
     this.layers[1] = linelayer;
   }
+
+  guessSecIcon(port1, port2, con) {
+    const sec = this.h.guessSecurityStatus(port1, port2, con);
+    const icon =
+      sec == 'S'
+        ? '<img style="width:16px" src="/assets/lock-fa.png"/>'
+        : sec == '!'
+        ? '<img style="width:16px" src="/assets/locko-fa.png"/>'
+        : '?';
+    return icon;
+  }
+
   locSearch() {
     this.utHTTP
       .getHTTPData(

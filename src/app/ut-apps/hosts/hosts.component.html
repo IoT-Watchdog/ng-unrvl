@@ -1,7 +1,9 @@
 <h2>Hosts overview</h2>
 <div>
   <button (click)="reload()">Reload</button>
-  Own Location:
+  <!-- <button (click)="reset()">Reset</button> -->
+  Status: {{ openHostNameQueries > 0 ? 'Loading...' : 'Loaded.' }}
+  {{ openHostNameQueries }} | Own Location:
   <label for="lat">Lat:</label>
   <input
     type="text"
@@ -34,10 +36,11 @@
   <table class="flows" *ngIf="inetCons && inetCons.length">
     <tr>
       <!-- <th>idx</th> -->
+      <th><!-- secure --></th>
       <th>Source IP</th>
       <th>Dest. IP</th>
-      <th>remote hostname</th>
-      <th>remote location</th>
+      <th>Info / Hostname</th>
+      <th>Remote Location</th>
       <th>L4 Prot</th>
       <th>Src. Port</th>
       <th>Dest. Port</th>
@@ -50,6 +53,11 @@
     </tr>
     <tr *ngFor="let flow of inetCons">
       <!-- <td>{{ flow.idx }}</td> -->
+      <td class="icon">
+        <img *ngIf="flow.sec == 'S'" src="/assets/lock-fat.png" />
+        <img *ngIf="flow.sec == '!'" src="/assets/locko-fat.png" />
+        <span *ngIf="flow.sec == '?'" style="font-weight: bold; color: yellow;">?</span>
+      </td>
       <td class="r">{{ flow.IP_SRC_ADDR_str }}</td>
       <td class="r">
         {{ flow.IP_DST_ADDR_str }}
@@ -61,10 +69,12 @@
           ><img class="ntop" src="/assets/ntop_link.png"
         /></a>
       </td>
-      <td>
+      <td style="max-width: 20em; overflow-x: scroll">
         <span
           >{{
-            ipNames[flow.IP_DST_ADDR_str]
+            flow.INFO
+              ? flow.INFO
+              : ipNames[flow.IP_DST_ADDR_str]
               ? ipNames[flow.IP_DST_ADDR_str]
               : ipNames[flow.IP_SRC_ADDR_str]
               ? ipNames[flow.IP_SRC_ADDR_str]
