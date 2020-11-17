@@ -6,15 +6,14 @@ import { geoJSON, circleMarker } from 'leaflet';
 import { forEach } from 'lodash-es';
 
 @Component({
-  selector: 'app-hosts',
-  templateUrl: './hosts.component.html',
-  styleUrls: ['./hosts.component.css'],
+  selector: 'app-localcons',
+  templateUrl: './localcons.component.html',
+  styleUrls: ['./localcons.component.css'],
 })
-export class HostsComponent implements OnInit, OnDestroy {
+export class LocalconsComponent implements OnInit, OnDestroy {
   public API = '';
 
   public sqlresult: Array<any>;
-  public inetCons: Array<any> = [];
   public localCons: Array<any> = [];
 
   public ipNames = { '192.168.3.1': 'Iot-Watchdog Gateway' };
@@ -24,26 +23,8 @@ export class HostsComponent implements OnInit, OnDestroy {
 
   public openHostNameQueries = 0;
 
-  public geolocationPosition: Object;
-  public ownLat = 47.07;
-  public ownLon = 15.43;
-  public ownCity = 'Graz';
   private coordinateTable = {}; // { $lon: { $lat: [IP1, IP2] } } //lat, lon rounded to 4 digits
 
-  public geojsonMarkerOptions = {
-    radius: 6,
-    color: '#0000ff',
-    weight: 1,
-    opacity: 1,
-    fillOpacity: 0.8,
-  };
-  public geojsonMarkerOptionsHome = {
-    radius: 6,
-    color: '#00ff00',
-    weight: 1,
-    opacity: 1,
-    fillOpacity: 0.8,
-  };
   public ownHostName = 'IoT-Watchdog';
 
   constructor(
@@ -51,7 +32,7 @@ export class HostsComponent implements OnInit, OnDestroy {
     private utHTTP: UtFetchdataService,
     private h: HelperFunctionsService
   ) {
-    this.globalSettings.emitChange({ appName: 'Internet Connection List' });
+    this.globalSettings.emitChange({ appName: 'Local Connection List' });
   }
 
   ngOnInit() {
@@ -67,7 +48,6 @@ export class HostsComponent implements OnInit, OnDestroy {
   reload() {
     this.sqlresult = [];
     this.localCons = [];
-    this.inetCons = [];
     this.utHTTP
       .getHTTPData(this.API + 'sql/my.php')
       .subscribe((data: Object) => this.handleMyQuery(data));
@@ -222,7 +202,6 @@ export class HostsComponent implements OnInit, OnDestroy {
         this.localCons.push(row);
         continue;
       }
-      this.inetCons.push(row);
     }
     console.log('this.ipCons', this.ipCons);
   }
@@ -235,7 +214,6 @@ export class HostsComponent implements OnInit, OnDestroy {
   handleIPname(data: Object) {
     if (data.hasOwnProperty('success') && data['success'] == false) {
       console.error('handleIPname error, ret:', data);
-
       this.openHostNameQueries -= 1;
       return;
     }

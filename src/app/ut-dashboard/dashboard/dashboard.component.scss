@@ -28,6 +28,10 @@ div.panel {
   padding: 0.6em;
   margin: 0.6em;
   text-decoration: none;
+  img {
+    max-width: 4.5cm;
+    max-height: 1.9cm;
+  }
 }
 
 .panel > a[href] {

@@ -6,7 +6,7 @@
 a {
   text-align: center;
   display: inline-block;
-  width: 4.5cm;
+  width: 6cm;
   height: 2.8cm;
   overflow:hidden;
   border: 3px #2a5770 solid;
@@ -28,7 +28,7 @@ th {
 }
 
 .app-preview {
-  width: 5cm;
+  width: 6cm;
   height: 2cm;
   /* background: rebeccapurple; */
   vertical-align: middle;

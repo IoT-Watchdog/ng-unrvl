@@ -44,11 +44,20 @@ const appRoutes: Routes = [
       import('./ut-apps/flicker/flicker.module').then((m) => m.FlickerModule),
   },
   {
-    path: 'Apps/Hosts',
+    path: 'Apps/Hosts', // Inet cons
     loadChildren: () =>
       import('./ut-apps/hosts/hosts.module').then((m) => m.HostsModule),
   },
-
+  {
+    path: 'Apps/LocalCons',
+    loadChildren: () =>
+      import('./ut-apps/localcons/localcons.module').then((m) => m.LocalconsModule),
+  },
+  {
+    path: 'Apps/Inetmap',
+    loadChildren: () =>
+      import('./ut-apps/inetmap/inetmap.module').then((m) => m.InetmapModule),
+  },
   {
     path: 'Apps/noir',
     loadChildren: () =>

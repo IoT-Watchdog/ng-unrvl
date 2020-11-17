@@ -1,0 +1,43 @@
+<h2>Internet Connection Map</h2>
+<div>
+  <button (click)="reload()">Reload</button>
+  <!-- <button (click)="reset()">Reset</button> -->
+  Status: {{ openHostNameQueries > 0 ? 'Loading...' : 'Loaded.' }}
+  {{ openHostNameQueries }} | Own Location:
+  <label for="lat">Lat:</label>
+  <input
+    type="text"
+    class="form-control"
+    name="lat"
+    id="lat"
+    [(ngModel)]="ownLat"
+  />
+  <label for="lon">Lon:</label>
+  <input
+    type="text"
+    class="form-control"
+    name="lon"
+    id="lon"
+    [(ngModel)]="ownLon"
+  />
+  <label for="ownCity">Search:</label>
+  <input
+    type="text"
+    class="form-control"
+    name="ownCity"
+    id="ownCity"
+    [(ngModel)]="ownCity"
+  />
+  <button (click)="locSearch()">Go</button>
+</div>
+
+<!--
+<div *ngFor="let entry of ipNames | keyvalue">
+  {{ entry.key }} : {{ entry.value }}
+</div> -->
+
+<!-- {{ sqlresult[0] }}  *ngIf="ipNames[flow.IP_DST_ADDR_str]"-->
+
+<div class="fs-container">
+  <app-map [x]="15.46" [y]="47.07" [z]="3" [layers]="layers"></app-map>
+</div>

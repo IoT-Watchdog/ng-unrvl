@@ -1,4 +1,4 @@
-<h2>Hosts overview</h2>
+<h2>Local Host Connections</h2>
 <div>
   <button (click)="reload()">Reload</button>
   <!-- <button (click)="reset()">Reset</button> -->
@@ -7,15 +7,13 @@
 </div>
 
 <div class="flowcont">
-  <h3>Internet Connections</h3>
-  <table class="flows" *ngIf="inetCons && inetCons.length">
+  <h3>Local Connections</h3>
+  <table class="flows" *ngIf="localCons && localCons.length">
     <tr>
       <!-- <th>idx</th> -->
-      <th><!-- secure --></th>
       <th>Source IP</th>
       <th>Dest. IP</th>
-      <th>Info / Hostname</th>
-      <th>Remote Location</th>
+      <th>remote hostname</th>
       <th>L4 Prot</th>
       <th>Src. Port</th>
       <th>Dest. Port</th>
@@ -26,15 +24,8 @@
       <th>In</th>
       <th>Out</th>
     </tr>
-    <tr *ngFor="let flow of inetCons">
+    <tr *ngFor="let flow of localCons">
       <!-- <td>{{ flow.idx }}</td> -->
-      <td class="icon">
-        <img *ngIf="flow.sec == 'S'" src="/assets/lock-fat.png" />
-        <img *ngIf="flow.sec == '!'" src="/assets/locko-fat.png" />
-        <span *ngIf="flow.sec == '?'" style="font-weight: bold; color: yellow"
-          >?</span
-        >
-      </td>
       <td class="r">{{ flow.IP_SRC_ADDR_str }}</td>
       <td class="r">
         {{ flow.IP_DST_ADDR_str }}
@@ -47,42 +38,14 @@
           ><img class="ntop" src="/assets/ntop_link.png"
         /></a>
       </td>
-      <td style="max-width: 20em; overflow-x: scroll">
+      <td>
         <span
           >{{
-            flow.INFO
-              ? flow.INFO
-              : ipNames[flow.IP_DST_ADDR_str]
+            ipNames[flow.IP_DST_ADDR_str]
               ? ipNames[flow.IP_DST_ADDR_str]
               : ipNames[flow.IP_SRC_ADDR_str]
               ? ipNames[flow.IP_SRC_ADDR_str]
               : '...'
-          }}
-        </span>
-      </td>
-      <td>
-        <span *ngIf="ipLocations[flow.IP_SRC_ADDR_str]"
-          >{{ ipLocations[flow.IP_SRC_ADDR_str]['isoCode']
-          }}{{
-            ipLocations[flow.IP_SRC_ADDR_str]['city']
-              ? ', ' + ipLocations[flow.IP_SRC_ADDR_str]['city']
-              : ''
-          }}{{
-            ipLocations[flow.IP_SRC_ADDR_str]['state']
-              ? ', ' + ipLocations[flow.IP_SRC_ADDR_str]['state']
-              : ''
-          }}
-        </span>
-        <span *ngIf="ipLocations[flow.IP_DST_ADDR_str]"
-          >{{ ipLocations[flow.IP_DST_ADDR_str]['isoCode']
-          }}{{
-            ipLocations[flow.IP_DST_ADDR_str]['city']
-              ? ', ' + ipLocations[flow.IP_DST_ADDR_str]['city']
-              : ''
-          }}{{
-            ipLocations[flow.IP_DST_ADDR_str]['state']
-              ? ', ' + ipLocations[flow.IP_DST_ADDR_str]['state']
-              : ''
           }}
         </span>
       </td>
@@ -97,11 +60,12 @@
       <td class="r">{{ flow.outb_s }}B</td>
     </tr>
   </table>
-
-  <!--
+</div>
+<!--
 <div *ngFor="let entry of ipNames | keyvalue">
   {{ entry.key }} : {{ entry.value }}
 </div> -->
 
-  <!-- {{ sqlresult[0] }}  *ngIf="ipNames[flow.IP_DST_ADDR_str]"-->
-</div>
+<!-- {{ sqlresult[0] }}  *ngIf="ipNames[flow.IP_DST_ADDR_str]"-->
+
+

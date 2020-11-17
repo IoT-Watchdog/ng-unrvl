@@ -23,13 +23,6 @@ table {
 tr:hover {
   background-color: gray;
 }
-.fs-container {
-  position: absolute;
-  top: 50%;
-  left: 0.5rem;
-  right: 0.5rem;
-  bottom: 0.5rem;
-}
 td.r {
   text-align: right;
 }

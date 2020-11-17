@@ -7,25 +7,12 @@
   top: 6.5rem;
   left: 0.5rem;
   right: 0.5rem;
-  bottom: 0.5rem;
+  bottom: 51%;
   overflow-y: scroll;
-}
-table, td, th {
-  border: 0;
-}
-td, th {
-  padding: 0.1rem 0.3rem;
-}
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-tr:hover {
-  background-color: gray;
 }
 .fs-container {
   position: absolute;
-  top: 50%;
+  top: 7em;
   left: 0.5rem;
   right: 0.5rem;
   bottom: 0.5rem;

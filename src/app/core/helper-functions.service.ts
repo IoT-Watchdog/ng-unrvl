@@ -862,6 +862,7 @@ export class HelperFunctionsService {
     if (proto == 154) return 'LLMNR';
     if (proto == 178) return 'TLS.amazon';
     if (proto == 188) return 'Quick UDP'; // QUIC
+    if (proto == 196) return 'DNS over TLS'; // via /etc/services
     if (proto == 212) return 'TLS.microsoft';
     if (proto == 220) return 'TLS.cloudflare';
     if (proto == 228) return 'TLS.playstore'; //  / DNS.playstore
@@ -869,7 +870,7 @@ export class HelperFunctionsService {
     return proto.toString(10);
   }
   guessSecurityStatus(port1, port2, protocol) {
-    const securePorts = [443, 993, 22];
+    const securePorts = [443, 993, 22, 853];
     const secureProts = ['IMAPS', 'TLS'];
     const port1Int = parseInt(port1);
     const port2Int = parseInt(port2);
