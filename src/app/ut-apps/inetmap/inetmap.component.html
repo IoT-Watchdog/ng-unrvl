@@ -1,6 +1,7 @@
 <h2>Internet Connection Map</h2>
 <div>
-  <label for="ownCity">Show last # Connections:</label>
+  &nbsp;&nbsp;
+  <label for="conLimit">Query last # Connections:</label>
   <input
     type="text"
     class="form-control"
@@ -12,6 +13,7 @@
   &nbsp;&nbsp;
   <button (click)="reload()">Reload</button>
   <!-- <button (click)="reset()">Reset</button> -->
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   Own Location:
   <label for="lat">Lat:</label>
   <input
@@ -53,7 +55,7 @@
   <app-map [x]="15.46" [y]="47.07" [z]="3" [layers]="layers"></app-map>
 </div>
 <div class="stats">
-  {{ this.nrCons }} Connections displayed. | DNS resolution:
+  {{ this.nrCons }} Connections loaded ({{ localCons.length }} local, {{ inetCons.length }} unique Inet displayed). | DNS resolution:
   {{ openHostNameQueries > 0 ? 'Loading Names, ' : 'Loaded All Names.' }}
   {{ openHostNameQueries > 0 ? openHostNameQueries : '' }}
   {{ openHostNameQueries > 0 ? 'left.' : '' }}

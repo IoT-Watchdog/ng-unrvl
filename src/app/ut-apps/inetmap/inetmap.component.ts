@@ -71,7 +71,11 @@ export class InetmapComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const lsConLimit = this.l.get('conLimit');
     if (lsConLimit) {
-      this.conLimit = lsConLimit
+      this.conLimit = lsConLimit;
+    }
+    const lsCity = this.l.get('ownCity');
+    if (lsCity) {
+      this.ownCity = lsCity;
     }
     const lscoords = this.l.get('owncoords');
     if (Array.isArray(lscoords) && lscoords.length == 2) {
@@ -596,6 +600,7 @@ export class InetmapComponent implements OnInit, OnDestroy {
   }
 
   locSearch() {
+    this.l.set('ownCity', this.ownCity);
     this.utHTTP
       .getHTTPData(
         'https://nominatim.openstreetmap.org/search?q=' +
@@ -615,7 +620,11 @@ export class InetmapComponent implements OnInit, OnDestroy {
           this.geoJsonPoints.features[0]['geometry']['coordinates'] =
             firstfeature['geometry']['coordinates'];
 
-            this.l.set('owncoords',this.geoJsonPoints.features[0]['geometry']['coordinates'])
+          this.l.set(
+            'owncoords',
+            this.geoJsonPoints.features[0]['geometry']['coordinates']
+          );
+
           this.updateLines();
           this.updateMap();
         } else {

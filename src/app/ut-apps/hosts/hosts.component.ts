@@ -4,6 +4,7 @@ import { UtFetchdataService } from '../../shared/ut-fetchdata.service';
 import { HelperFunctionsService } from '../../core/helper-functions.service';
 import { geoJSON, circleMarker } from 'leaflet';
 import { forEach } from 'lodash-es';
+import { LocalStorageService } from '../../core/local-storage.service';
 
 @Component({
   selector: 'app-hosts',
@@ -14,6 +15,8 @@ export class HostsComponent implements OnInit, OnDestroy {
   public API = '';
 
   public sqlresult: Array<any>;
+  public conLimit = 150;
+  public nrCons = 0;
   public inetCons: Array<any> = [];
   public localCons: Array<any> = [];
 
@@ -49,27 +52,33 @@ export class HostsComponent implements OnInit, OnDestroy {
   constructor(
     private globalSettings: GlobalSettingsService,
     private utHTTP: UtFetchdataService,
-    private h: HelperFunctionsService
+    private h: HelperFunctionsService,
+    private l: LocalStorageService
   ) {
     this.globalSettings.emitChange({ appName: 'Internet Connection List' });
   }
 
   ngOnInit() {
+    const lsConLimit = this.l.get('conLimitHosts');
+    if (lsConLimit) {
+      this.conLimit = lsConLimit
+    }
     this.API = this.globalSettings.getAPIEndpoint();
 
     this.utHTTP
-      .getHTTPData(this.API + 'sql/my.php')
+      .getHTTPData(this.API + 'sql/my.php?limit=' + this.conLimit.toString())
       .subscribe((data: Object) => this.handleMyQuery(data));
     // this.getNameforIP('192.27.2.3');
   }
   ngOnDestroy() {}
 
   reload() {
+    this.l.set('conLimitHosts', this.conLimit);
     this.sqlresult = [];
     this.localCons = [];
     this.inetCons = [];
     this.utHTTP
-      .getHTTPData(this.API + 'sql/my.php')
+      .getHTTPData(this.API + 'sql/my.php?limit=' + this.conLimit.toString())
       .subscribe((data: Object) => this.handleMyQuery(data));
   }
   handleMyQuery(data: Object) {
@@ -77,6 +86,7 @@ export class HostsComponent implements OnInit, OnDestroy {
     const newArr = [];
     const dataArr = data['result'];
     const uniqueDataArr = [];
+    this.nrCons = dataArr.length;
     for (let i = 0; i < dataArr.length; i++) {
       const row = dataArr[i];
 

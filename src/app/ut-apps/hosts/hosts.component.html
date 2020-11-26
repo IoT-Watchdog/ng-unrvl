@@ -1,9 +1,18 @@
 <h2>Hosts overview</h2>
 <div>
+  &nbsp;&nbsp;
+  <label for="conLimit">Query last # Connections:</label>&nbsp;
+  <input
+    type="text"
+    class="form-control"
+    name="conLimit"
+    id="conLimit"
+    [(ngModel)]="conLimit"
+    style="width: 3em"
+  />
+  &nbsp;&nbsp;
   <button (click)="reload()">Reload</button>
   <!-- <button (click)="reset()">Reset</button> -->
-  Status: {{ openHostNameQueries > 0 ? 'Loading...' : 'Loaded.' }}
-  {{ openHostNameQueries }}
 </div>
 
 <div class="flowcont">
@@ -13,7 +22,7 @@
       <!-- <th>idx</th> -->
       <th><!-- secure --></th>
       <th>Source IP</th>
-      <th>Dest. IP</th>
+      <th style="width: 9em;">Dest. IP</th>
       <th>Info / Hostname</th>
       <th>Remote Location</th>
       <th>L4 Prot</th>
@@ -25,6 +34,7 @@
       <th>Duration (s)</th>
       <th>In</th>
       <th>Out</th>
+      <th>Count</th>
     </tr>
     <tr *ngFor="let flow of inetCons">
       <!-- <td>{{ flow.idx }}</td> -->
@@ -104,4 +114,11 @@
 </div> -->
 
   <!-- {{ sqlresult[0] }}  *ngIf="ipNames[flow.IP_DST_ADDR_str]"-->
+  <br />
+  <div class="stats">
+    {{ this.nrCons }} Connections loaded ({{ localCons.length }} local, {{ inetCons.length }} unique Inet displayed). | DNS resolution:
+    {{ openHostNameQueries > 0 ? 'Loading Names, ' : 'Loaded All Names.' }}
+    {{ openHostNameQueries > 0 ? openHostNameQueries : '' }}
+    {{ openHostNameQueries > 0 ? 'left.' : '' }}
+  </div>
 </div>
