@@ -1,18 +1,18 @@
 <div id="dashboard" #dashboard>
   <h2>IoT-Watchdog Network Analyze Tools</h2>
   <div class="panel">
-    <app-ut-dashboard-tile title="Internet Connection Map" path="/Apps/Inetmap"></app-ut-dashboard-tile>
-    <app-ut-dashboard-tile title="Internet Connection List" path="/Apps/Hosts"></app-ut-dashboard-tile>
-    <app-ut-dashboard-tile title="Local Connection List" path="/Apps/LocalCons"></app-ut-dashboard-tile>
+    <app-ut-dashboard-tile title="Internet Connection Map" path="/Apps/Inetmap" bg="#FFF" icon="applications-internet.png"></app-ut-dashboard-tile>
+    <app-ut-dashboard-tile title="Internet Connection List" path="/Apps/Hosts" bg="#FFF" icon="noun_Sitemap_1675660_wo_attr.svg"></app-ut-dashboard-tile>
+    <app-ut-dashboard-tile title="Local Connection List" path="/Apps/LocalCons" bg="#FFF" icon="noun_Smart-Home_74466_wo_attr.svg"></app-ut-dashboard-tile>
   </div>
   <hr>
 
   <h2>Open Source Tools</h2>
   <div class="panel">
     <a href="{{ globalSettings.server.baseurl }}:10000/" target="_blank"
-      ><img src="/assets/Wireshark_Logo.svg" /><br>Wireshark</a>
+      ><br><img src="/assets/Wireshark_Logo.svg" /><br><br>Wireshark</a>
     <a href="{{ globalSettings.server.baseurl }}:3000/lua/flows_stats.lua?ifid=2" target="_blank"
-      ><img src="/assets/ntopng_logo.png" /><br>ntopng</a>
+      ><img src="/assets/ntopng_logo.png" /><div style="margin-top: 0.8em;">ntopng</div></a>
   </div>
   <hr>
 <!--
