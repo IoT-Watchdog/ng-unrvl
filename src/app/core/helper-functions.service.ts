@@ -48,7 +48,7 @@ export class HelperFunctionsService {
     const url = window.location.href;
     const angularRoute = this.loc.path();
     this.domainAndApp = url.replace(angularRoute, '');
-    this.domain = this.domainAndApp.replace(/:[0-9]*$/, '').replace(/[?]/, '');
+    this.domain = this.domainAndApp.replace(/:[0-9]*$/, '').replace(/[?]/, '').replace(/\/$/, '');
 
     for (let cWeightI = 0; cWeightI < this.colors.blue.length; cWeightI++) {
       for (let cOrderI = 0; cOrderI < this.colorOrder.length; cOrderI++) {
