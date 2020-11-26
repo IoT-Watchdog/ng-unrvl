@@ -3,7 +3,8 @@ import { GlobalSettingsService } from '../../core/global-settings.service';
 import { UtFetchdataService } from '../../shared/ut-fetchdata.service';
 import { HelperFunctionsService } from '../../core/helper-functions.service';
 import { geoJSON, circleMarker } from 'leaflet';
-import { forEach } from 'lodash-es';
+import cloneDeep from 'lodash-es/cloneDeep';
+import { LocalStorageService } from '../../core/local-storage.service';
 
 @Component({
   selector: 'app-inetmap',
@@ -14,6 +15,8 @@ export class InetmapComponent implements OnInit, OnDestroy {
   public API = '';
 
   public sqlresult: Array<any>;
+  public conLimit = 30;
+  public nrCons = 0;
   public inetCons: Array<any> = [];
   public localCons: Array<any> = [];
 
@@ -34,7 +37,7 @@ export class InetmapComponent implements OnInit, OnDestroy {
     features: [],
   };
 
-  public geolocationPosition: Object;
+  // public geolocationPosition: Object;
   public ownLat = 47.07;
   public ownLon = 15.43;
   public ownCity = 'Graz';
@@ -59,52 +62,73 @@ export class InetmapComponent implements OnInit, OnDestroy {
   constructor(
     private globalSettings: GlobalSettingsService,
     private utHTTP: UtFetchdataService,
-    private h: HelperFunctionsService
+    private h: HelperFunctionsService,
+    private l: LocalStorageService
   ) {
     this.globalSettings.emitChange({ appName: 'Internet Connection Map' });
   }
 
   ngOnInit() {
-    if (window.navigator.geolocation) {
-      window.navigator.geolocation.getCurrentPosition(
-        (position) => {
-          (this.geolocationPosition = position), console.log(position);
-          const point: GeoJSON.Feature<any> = {
-            type: 'Feature' as const,
-            properties: { Host: this.ownHostName },
-            geometry: {
-              type: 'Point',
-              coordinates: [
-                position.coords.longitude,
-                position.coords.latitude,
-              ],
-            },
-          };
-          this.ownLat = position.coords.latitude;
-          this.ownLon = position.coords.longitude;
-          this.geoJsonPoints.features.push(point);
-          this.updateMap();
-        },
-        (error) => {
-          switch (error.code) {
-            case 1:
-              console.log('Permission Denied');
-              break;
-            case 2:
-              console.log('Position Unavailable');
-              break;
-            case 3:
-              console.log('Timeout');
-              break;
-          }
-        }
-      );
+    const lsConLimit = this.l.get('conLimit');
+    if (lsConLimit) {
+      this.conLimit = lsConLimit
     }
+    const lscoords = this.l.get('owncoords');
+    if (Array.isArray(lscoords) && lscoords.length == 2) {
+      this.ownLon = lscoords[0];
+      this.ownLat = lscoords[1];
+      console.log('loaded coords from Localtorage:', lscoords);
+    }
+    const point: GeoJSON.Feature<any> = {
+      type: 'Feature' as const,
+      properties: { Host: this.ownHostName },
+      geometry: {
+        type: 'Point',
+        coordinates: [this.ownLon, this.ownLat],
+      },
+    };
+    this.geoJsonPoints.features.push(point);
+    this.updateMap();
+    // if (window.navigator.geolocation) { // geoloc doesnt work on non-https
+    //   window.navigator.geolocation.getCurrentPosition(
+    //     (position) => {
+    //       (this.geolocationPosition = position), console.log(position);
+    //       const point: GeoJSON.Feature<any> = {
+    //         type: 'Feature' as const,
+    //         properties: { Host: this.ownHostName },
+    //         geometry: {
+    //           type: 'Point',
+    //           coordinates: [
+    //             position.coords.longitude,
+    //             position.coords.latitude,
+    //           ],
+    //         },
+    //       };
+    //       this.ownLat = position.coords.latitude;
+    //       this.ownLon = position.coords.longitude;
+    //       this.geoJsonPoints.features.push(point);
+    //       this.updateMap();
+    //     },
+    //     (error) => {
+    //       switch (error.code) {
+    //         case 1:
+    //           console.log('Permission Denied');
+    //           break;
+    //         case 2:
+    //           console.log('Position Unavailable');
+    //           break;
+    //         case 3:
+    //           console.log('Timeout');
+    //           break;
+    //       }
+    //     }
+    //   );
+    // }
 
     this.API = this.globalSettings.getAPIEndpoint();
 
     this.utHTTP
-      .getHTTPData(this.API + 'sql/my.php')
+      .getHTTPData(this.API + 'sql/my.php?limit=' + this.conLimit.toString())
       .subscribe((data: Object) => this.handleMyQuery(data));
     // this.getNameforIP('192.27.2.3');
   }
@@ -119,12 +143,13 @@ export class InetmapComponent implements OnInit, OnDestroy {
   }
 
   reload() {
+    this.l.set('conLimit', this.conLimit);
     this.sqlresult = [];
     this.localCons = [];
     this.inetCons = [];
     this.reset();
     this.utHTTP
-      .getHTTPData(this.API + 'sql/my.php')
+      .getHTTPData(this.API + 'sql/my.php?limit=' + this.conLimit.toString())
       .subscribe((data: Object) => this.handleMyQuery(data));
   }
   handleMyQuery(data: Object) {
@@ -132,6 +157,7 @@ export class InetmapComponent implements OnInit, OnDestroy {
     const newArr = [];
     const dataArr = data['result'];
     const uniqueDataArr = [];
+    this.nrCons = dataArr.length;
     for (let i = 0; i < dataArr.length; i++) {
       const row = dataArr[i];
 
@@ -307,10 +333,10 @@ export class InetmapComponent implements OnInit, OnDestroy {
         } else {
           this.ipNames[key] = data[key].slice(0, -1); // remove last "."
         }
-        console.log(key, ':', this.ipNames[key]);
+        console.log('ipNames: new', key, ':', this.ipNames[key]);
       }
     }
-    console.log(this.ipNames);
+    // console.log('ipNames', this.ipNames);
     if (this.openHostNameQueries == 1) {
       this.updateLines();
       this.updateMap();
@@ -376,7 +402,7 @@ export class InetmapComponent implements OnInit, OnDestroy {
     }
     this.geoJsonPoints.features.push(point);
 
-    console.log(this.geolocationPosition);
+    // console.log(this.geolocationPosition);
 
     console.log(this.layers);
 
@@ -388,6 +414,8 @@ export class InetmapComponent implements OnInit, OnDestroy {
       type: 'FeatureCollection',
       features: [],
     };
+    console.log('updateLines, #Points:', this.geoJsonPoints.features.length);
+
     for (let i = 1; i < this.geoJsonPoints.features.length; i++) {
       // 0 is Iot-Watchdog
       const element = this.geoJsonPoints.features[i];
@@ -453,6 +481,12 @@ export class InetmapComponent implements OnInit, OnDestroy {
           this.ownLat - (d_lat / 5) * 4 + (y_offset / 3) * 2,
         ];
         coordinates.push(lastIntP);
+      } else {
+        console.error(
+          cloneDeep(element),
+          'not in coordinate table',
+          cloneDeep(this.coordinateTable)
+        );
       }
       coordinates.push([lon, lat]);
       const linestring: GeoJSON.Feature<any> = {
@@ -466,6 +500,8 @@ export class InetmapComponent implements OnInit, OnDestroy {
       linestring.properties = element.properties;
       newGeoJsonLines.features.push(linestring);
     }
+    console.log('updateLines, #Lines:', newGeoJsonLines.features.length);
+
     this.geoJsonLines = newGeoJsonLines;
   }
   updateMap() {
@@ -579,6 +615,7 @@ export class InetmapComponent implements OnInit, OnDestroy {
           this.geoJsonPoints.features[0]['geometry']['coordinates'] =
             firstfeature['geometry']['coordinates'];
 
+            this.l.set('owncoords',this.geoJsonPoints.features[0]['geometry']['coordinates'])
           this.updateLines();
           this.updateMap();
         } else {

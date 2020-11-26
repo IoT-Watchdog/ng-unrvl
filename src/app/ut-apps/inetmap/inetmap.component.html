@@ -1,9 +1,18 @@
 <h2>Internet Connection Map</h2>
 <div>
+  <label for="ownCity">Show last # Connections:</label>
+  <input
+    type="text"
+    class="form-control"
+    name="conLimit"
+    id="conLimit"
+    [(ngModel)]="conLimit"
+    style="width: 3em"
+  />
+  &nbsp;&nbsp;
   <button (click)="reload()">Reload</button>
   <!-- <button (click)="reset()">Reset</button> -->
-  Status: {{ openHostNameQueries > 0 ? 'Loading...' : 'Loaded.' }}
-  {{ openHostNameQueries }} | Own Location:
+  Own Location:
   <label for="lat">Lat:</label>
   <input
     type="text"
@@ -11,6 +20,7 @@
     name="lat"
     id="lat"
     [(ngModel)]="ownLat"
+    style="width: 10em"
   />
   <label for="lon">Lon:</label>
   <input
@@ -19,6 +29,7 @@
     name="lon"
     id="lon"
     [(ngModel)]="ownLon"
+    style="width: 10em"
   />
   <label for="ownCity">Search:</label>
   <input
@@ -40,4 +51,10 @@
 
 <div class="fs-container">
   <app-map [x]="15.46" [y]="47.07" [z]="3" [layers]="layers"></app-map>
+</div>
+<div class="stats">
+  {{ this.nrCons }} Connections displayed. | DNS resolution:
+  {{ openHostNameQueries > 0 ? 'Loading Names, ' : 'Loaded All Names.' }}
+  {{ openHostNameQueries > 0 ? openHostNameQueries : '' }}
+  {{ openHostNameQueries > 0 ? 'left.' : '' }}
 </div>
