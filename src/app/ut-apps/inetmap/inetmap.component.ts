@@ -15,7 +15,7 @@ export class InetmapComponent implements OnInit, OnDestroy {
   public API = '';
 
   public sqlresult: Array<any>;
-  public conLimit = 30;
+  public conLimit = 100;
   public nrCons = 0;
   public inetCons: Array<any> = [];
   public localCons: Array<any> = [];
