@@ -1,7 +1,8 @@
 # ng-unrvl
 
-Angular Frontend to visualize data - from endpoints Prometheus/Influx
+Angular Frontend to visualize network data.
 
+![](https://github.com/IoT-Watchdog/documentation/blob/master/Screenshot_map.png)
 
 # Building
 
