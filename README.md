@@ -1,8 +1,8 @@
 # ng-unrvl
 
-Angular Frontend to visualize data - primarly from Prometheus database as sensor data endpoint.
+Angular Frontend to visualize network data.
 
-![](CO2-startpage.png)
+![](https://github.com/IoT-Watchdog/documentation/blob/master/Screenshot_map.png)
 
 # Building
 
